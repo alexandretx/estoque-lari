@@ -2,6 +2,8 @@ require('dotenv').config(); // Carrega variáveis de ambiente do .env
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const morgan = require('morgan');
+const path = require('path');
 
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
@@ -15,6 +17,11 @@ const app = express();
 // Middlewares essenciais
 app.use(cors()); // Habilita CORS para permitir requisições do frontend
 app.use(express.json()); // Permite que o Express entenda JSON no corpo das requisições
+
+// Logger para desenvolvimento
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 
 // Conexão com o MongoDB
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -42,9 +49,18 @@ app.use('/api/acessorios', acessorioRoutes); // Adicionado
 app.use('/api/planos', planoRoutes); // Adicionado
 app.use('/api/dashboard', dashboardRoutes); // Usar
 
+// Servir arquivos estáticos em produção
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+    });
+}
+
 // --- Middleware de tratamento de erros --- (Pode ser adicionado depois)
 // Exemplo: app.use(require('./middleware/errorMiddleware'));
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`)); 
+app.listen(PORT, () => console.log(`Servidor rodando no modo ${process.env.NODE_ENV} na porta ${PORT}`)); 
