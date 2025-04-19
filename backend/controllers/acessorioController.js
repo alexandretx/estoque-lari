@@ -1,4 +1,5 @@
 const Acessorio = require('../models/Acessorio');
+const { registerActivity } = require('./activityController');
 
 // @desc    Listar todos os acessórios
 // @route   GET /api/acessorios
@@ -60,6 +61,16 @@ exports.createAcessorio = async (req, res) => {
             valor,
             // user: req.user.id
         });
+
+        // Registrar atividade
+        await registerActivity(
+            'Acessório adicionado',
+            marca && modelo ? `${marca} ${modelo}` : (nome || 'Acessório sem nome'),
+            acessorio._id,
+            'acessorio',
+            req.user
+        );
+
         res.status(201).json(acessorio);
     } catch (error) {
         console.error('Erro ao cadastrar acessório:', error);
@@ -104,6 +115,17 @@ exports.updateAcessorio = async (req, res) => {
         await acessorio.validate();
         const acessorioAtualizado = await acessorio.save();
 
+        // Registrar atividade
+        await registerActivity(
+            'Acessório atualizado',
+            acessorioAtualizado.marca && acessorioAtualizado.modelo 
+                ? `${acessorioAtualizado.marca} ${acessorioAtualizado.modelo}` 
+                : (acessorioAtualizado.nome || 'Acessório sem nome'),
+            acessorioAtualizado._id,
+            'acessorio',
+            req.user
+        );
+
         res.status(200).json(acessorioAtualizado);
     } catch (error) {
         console.error('Erro ao atualizar acessório:', error);
@@ -133,7 +155,22 @@ exports.deleteAcessorio = async (req, res) => {
         //     return res.status(401).json({ message: 'Não autorizado' });
         // }
 
+        // Guardar informações antes de excluir
+        const acessorioInfo = acessorio.marca && acessorio.modelo 
+            ? `${acessorio.marca} ${acessorio.modelo}` 
+            : (acessorio.nome || 'Acessório sem nome');
+        const acessorioId = acessorio._id;
+
         await acessorio.deleteOne();
+
+        // Registrar atividade
+        await registerActivity(
+            'Acessório excluído',
+            acessorioInfo,
+            acessorioId,
+            'acessorio',
+            req.user
+        );
 
         res.status(200).json({ message: 'Acessório excluído com sucesso' });
     } catch (error) {
