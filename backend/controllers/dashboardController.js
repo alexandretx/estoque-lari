@@ -5,7 +5,7 @@ const PlanoMovel = require('../models/PlanoMovel');
 // @desc    Obter estatísticas do dashboard
 // @route   GET /api/dashboard/stats
 // @access  Private
-exports.getStats = async (req, res) => {
+exports.getDashboardStats = async (req, res) => {
     try {
         // Contar documentos em paralelo
         const [totalCelulares, totalAcessorios, totalPlanos] = await Promise.all([
