@@ -1,4 +1,5 @@
 const PlanoMovel = require('../models/PlanoMovel');
+const { registerActivity } = require('./activityController');
 
 // @desc    Listar todos os planos móveis
 // @route   GET /api/planos
@@ -50,6 +51,16 @@ exports.createPlano = async (req, res) => {
             valor,
             // user: req.user.id
         });
+
+        // Registrar atividade
+        await registerActivity(
+            'Plano adicionado',
+            nome,
+            plano._id,
+            'plano',
+            req.user
+        );
+
         res.status(201).json(plano);
     } catch (error) {
         console.error('Erro ao cadastrar plano:', error);
@@ -88,6 +99,15 @@ exports.updatePlano = async (req, res) => {
         await plano.validate();
         const planoAtualizado = await plano.save();
 
+        // Registrar atividade
+        await registerActivity(
+            'Plano atualizado',
+            planoAtualizado.nome,
+            planoAtualizado._id,
+            'plano',
+            req.user
+        );
+
         res.status(200).json(planoAtualizado);
     } catch (error) {
         console.error('Erro ao atualizar plano:', error);
@@ -121,7 +141,20 @@ exports.deletePlano = async (req, res) => {
         //     return res.status(401).json({ message: 'Não autorizado' });
         // }
 
+        // Guardar informações antes de excluir
+        const planoNome = plano.nome;
+        const planoId = plano._id;
+
         await plano.deleteOne();
+
+        // Registrar atividade
+        await registerActivity(
+            'Plano excluído',
+            planoNome,
+            planoId,
+            'plano',
+            req.user
+        );
 
         res.status(200).json({ message: 'Plano móvel excluído com sucesso' });
     } catch (error) {
