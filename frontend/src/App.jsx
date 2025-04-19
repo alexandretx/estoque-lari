@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 // Core Components
 import Navbar from './components/Navbar';
@@ -18,13 +18,17 @@ import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
 import PlanoFormPage from './pages/PlanoFormPage'; // Será criado a seguir
 
-// import './App.css' // Não é mais necessário
+// Estilos globais adicionais
+import './global.css';
 
 function App() {
+  // Detectar se é um dispositivo móvel
+  const isMobile = window.innerWidth < 768;
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden">
       <Navbar />
-      <main className="flex-grow pb-16 md:pb-0">
+      <main className="flex-grow pb-16 md:pb-0 px-2 sm:px-4 md:px-6">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/login" element={<LoginPage />} />
@@ -57,9 +61,9 @@ function App() {
       </main>
       <MobileNav />
       <ToastContainer 
-        position="bottom-right"
+        position={isMobile ? "bottom-center" : "bottom-right"}
         autoClose={3000}
-        hideProgressBar={false}
+        hideProgressBar={isMobile}
         newestOnTop={false}
         closeOnClick
         rtl={false}
@@ -67,6 +71,14 @@ function App() {
         draggable
         pauseOnHover
         theme="colored"
+        style={{ 
+          fontSize: isMobile ? '0.75rem' : '0.875rem',
+          maxWidth: isMobile ? '90%' : '350px'
+        }}
+        toastStyle={{
+          borderRadius: '8px',
+          padding: isMobile ? '8px 12px' : '12px 16px'
+        }}
       />
        {/* Footer (Opcional) */}
        {/* <footer className="bg-gray-200 text-center p-4 mt-auto">Footer Content</footer> */}
