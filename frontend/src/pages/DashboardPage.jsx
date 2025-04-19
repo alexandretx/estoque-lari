@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
 
 const API_STATS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/stats`;
+const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activities`;
 
 // Componente de Card reutilizável com ícone e animação
 const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
@@ -48,32 +49,76 @@ const SimpleBarChart = ({ data, title }) => {
   );
 };
 
-// Componente para Atividades Recentes (simulado)
+// Componente para Atividades Recentes (agora buscando do backend)
 const RecentActivities = () => {
-  const activities = [
-    { action: 'Celular adicionado', item: 'iPhone 13', time: 'há 2 horas' },
-    { action: 'Acessório atualizado', item: 'Carregador Tipo C', time: 'há 1 dia' },
-    { action: 'Plano excluído', item: 'Plano Controle 50GB', time: 'há 2 dias' },
-  ];
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(API_ACTIVITIES_URL);
+        setActivities(response.data);
+      } catch (err) {
+        console.error("Erro ao buscar atividades:", err);
+        setError("Não foi possível carregar atividades recentes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
   
   return (
     <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">Atividades Recentes</h3>
-      <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div key={index} className="flex items-start pb-4 border-b border-gray-100">
-            <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
+      
+      {loading && (
+        <div className="animate-pulse space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="flex items-start pb-4 border-b border-gray-100">
+              <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-800 truncate">{activity.action}</p>
-              <p className="text-xs text-gray-500 truncate">{activity.item} • {activity.time}</p>
+          ))}
+        </div>
+      )}
+      
+      {!loading && error && (
+        <div className="text-center text-gray-500 py-4">
+          <p>{error}</p>
+        </div>
+      )}
+      
+      {!loading && !error && activities.length === 0 && (
+        <div className="text-center text-gray-500 py-4">
+          <p>Nenhuma atividade recente</p>
+        </div>
+      )}
+      
+      {!loading && !error && activities.length > 0 && (
+        <div className="space-y-4">
+          {activities.map((activity, index) => (
+            <div key={index} className="flex items-start pb-4 border-b border-gray-100">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">{activity.action}</p>
+                <p className="text-xs text-gray-500 truncate">{activity.item} • {activity.time}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
