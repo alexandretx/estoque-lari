@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 
 // Core Components
 import Navbar from './components/Navbar';
+import MobileNav from './components/MobileNav';
 import PrivateRoute from './components/PrivateRoute';
 
 // Pages
@@ -23,7 +24,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow pb-16 md:pb-0">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/login" element={<LoginPage />} />
@@ -54,6 +55,7 @@ function App() {
           {/* <Route path="*" element={<NotFoundPage />} /> */}
         </Routes>
       </main>
+      <MobileNav />
       <ToastContainer 
         position="bottom-right"
         autoClose={3000}
