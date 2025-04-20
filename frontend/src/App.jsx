@@ -16,21 +16,13 @@ import AcessoriosPage from './pages/AcessoriosPage';
 import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
 import VivoPage from './pages/VivoPage';
-import PlanosPage from './pages/PlanosPage';
-import PlanoFormPage from './pages/PlanoFormPage';
-
-// Importações das Páginas Vivo - usando o barrel file
-import { 
-  VivoCelularesPage, 
-  VivoAcessoriosPage, 
-  VivoCelularFormPage, 
-  VivoAcessorioFormPage 
-} from './pages/vivo';
+import VivoCelularesPage from './pages/vivo/VivoCelularesPage';
+import VivoAcessoriosPage from './pages/vivo/VivoAcessoriosPage';
+import VivoCelularFormPage from './pages/vivo/VivoCelularFormPage';
+import VivoAcessorioFormPage from './pages/vivo/VivoAcessorioFormPage';
 
 // Estilos globais adicionais
 import './global.css';
-// Toastify CSS
-import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   // Detectar se é um dispositivo móvel

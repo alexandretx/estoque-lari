@@ -267,4 +267,4 @@ const VivoAcessoriosPage = () => {
   );
 };
 
-export default VivoAcessoriosPage;
+export default VivoAcessoriosPage; 

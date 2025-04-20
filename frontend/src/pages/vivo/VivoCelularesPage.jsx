@@ -272,4 +272,4 @@ const VivoCelularesPage = () => {
   );
 };
 
-export default VivoCelularesPage;
+export default VivoCelularesPage; 

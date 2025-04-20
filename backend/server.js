@@ -4,8 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
-const morgan = require('morgan');
-const path = require('path');
 
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
@@ -14,21 +12,11 @@ const acessorioRoutes = require('./routes/acessorioRoutes'); // Adicionado
 const planoRoutes = require('./routes/planoRoutes'); // Adicionado
 const dashboardRoutes = require('./routes/dashboardRoutes'); // Importar
 
-// Importação das rotas da Vivo
-const vivoDashboardRoutes = require('./routes/vivoDashboardRoutes');
-const vivoCelularRoutes = require('./routes/vivoCelularRoutes');
-const vivoAcessorioRoutes = require('./routes/vivoAcessorioRoutes');
-
 const app = express();
 
 // Middlewares essenciais
 app.use(cors()); // Habilita CORS para permitir requisições do frontend
 app.use(express.json()); // Permite que o Express entenda JSON no corpo das requisições
-
-// Logger para desenvolvimento
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-}
 
 // Logger para desenvolvimento
 if (process.env.NODE_ENV === 'development') {
@@ -61,11 +49,6 @@ app.use('/api/acessorios', acessorioRoutes); // Adicionado
 app.use('/api/planos', planoRoutes); // Adicionado
 app.use('/api/dashboard', dashboardRoutes); // Usar
 
-// Rotas da Vivo
-app.use('/api/vivo', vivoDashboardRoutes);
-app.use('/api/vivo/celulares', vivoCelularRoutes);
-app.use('/api/vivo/acessorios', vivoAcessorioRoutes);
-
 // Servir arquivos estáticos em produção
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -80,6 +63,4 @@ if (process.env.NODE_ENV === 'production') {
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor rodando no modo ${process.env.NODE_ENV} na porta ${PORT}`)); 
-
 app.listen(PORT, () => console.log(`Servidor rodando no modo ${process.env.NODE_ENV} na porta ${PORT}`)); 

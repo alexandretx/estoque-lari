@@ -1,4 +1,4 @@
-export { default as VivoCelularesPage } from './VivoCelularesPage';
-export { default as VivoAcessoriosPage } from './VivoAcessoriosPage';
-export { default as VivoCelularFormPage } from './VivoCelularFormPage';
-export { default as VivoAcessorioFormPage } from './VivoAcessorioFormPage';
+export { default as VivoCelularesPage } from './VivoCelularesPage.jsx';
+export { default as VivoAcessoriosPage } from './VivoAcessoriosPage.jsx';
+export { default as VivoCelularFormPage } from './VivoCelularFormPage.jsx';
+export { default as VivoAcessorioFormPage } from './VivoAcessorioFormPage.jsx'; 
