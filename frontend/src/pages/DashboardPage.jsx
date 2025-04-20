@@ -135,11 +135,6 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
     </svg>
   ),
-  plano: (
-    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-    </svg>
-  ),
 };
 
 const DashboardPage = () => {
@@ -169,8 +164,7 @@ const DashboardPage = () => {
   // Preparar dados para o gráfico de barras
   const chartData = stats ? [
     { label: 'Celulares', value: stats.celulares, color: 'bg-blue-600' },
-    { label: 'Acessórios', value: stats.acessorios, color: 'bg-green-600' },
-    { label: 'Planos', value: stats.planos, color: 'bg-purple-600' }
+    { label: 'Acessórios', value: stats.acessorios, color: 'bg-green-600' }
   ] : [];
 
   return (
@@ -194,8 +188,8 @@ const DashboardPage = () => {
       </div>
 
       {loading && (
-        <div className="animate-pulse grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {[...Array(3)].map((_, index) => (
+        <div className="animate-pulse grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {[...Array(2)].map((_, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -220,7 +214,7 @@ const DashboardPage = () => {
 
       {!loading && stats && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
             <StatCard
               title="Celulares em Estoque"
               value={stats.celulares}
@@ -239,18 +233,9 @@ const DashboardPage = () => {
               icon={Icons.acessorio}
               subtext="Gerenciar acessórios"
             />
-            <StatCard
-              title="Planos Cadastrados"
-              value={stats.planos}
-              linkTo="/planos"
-              bgColor="bg-purple-600"
-              borderColor="border-purple-600"
-              icon={Icons.plano}
-              subtext="Gerenciar planos"
-            />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
             <SimpleBarChart data={chartData} title="Visão Geral do Estoque" />
             <RecentActivities />
           </div>
