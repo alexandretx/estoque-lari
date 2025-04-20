@@ -13,10 +13,8 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import CelularesPage from './pages/CelularesPage'; // Será criado a seguir
 import AcessoriosPage from './pages/AcessoriosPage';
-import PlanosPage from './pages/PlanosPage'; // Será criado a seguir
 import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
-import PlanoFormPage from './pages/PlanoFormPage'; // Será criado a seguir
 
 // Estilos globais adicionais
 import './global.css';
@@ -48,11 +46,6 @@ function App() {
               <Route path="/acessorios" element={<AcessoriosPage />} />
               <Route path="/acessorios/novo" element={<AcessorioFormPage />} />
               <Route path="/acessorios/editar/:id" element={<AcessorioFormPage />} />
-
-              {/* Rotas Planos */}
-              <Route path="/planos" element={<PlanosPage />} />
-              <Route path="/planos/novo" element={<PlanoFormPage />} />
-              <Route path="/planos/editar/:id" element={<PlanoFormPage />} />
           </Route>
 
           {/* Rota Not Found (Opcional) */}
