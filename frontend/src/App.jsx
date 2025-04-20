@@ -16,12 +16,14 @@ import AcessoriosPage from './pages/AcessoriosPage';
 import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
 import VivoPage from './pages/VivoPage';
-import VivoCelularesPage from './pages/vivo/VivoCelularesPage';
-import VivoAcessoriosPage from './pages/vivo/VivoAcessoriosPage';
-import VivoCelularFormPage from './pages/vivo/VivoCelularFormPage';
-import VivoAcessorioFormPage from './pages/vivo/VivoAcessorioFormPage';
 import PlanosPage from './pages/PlanosPage';
 import PlanoFormPage from './pages/PlanoFormPage';
+
+// Páginas Vivo - importação absoluta para evitar problemas de resolução
+import VivoCelularesPage from '/src/pages/vivo/VivoCelularesPage.jsx';
+import VivoAcessoriosPage from '/src/pages/vivo/VivoAcessoriosPage.jsx';
+import VivoCelularFormPage from '/src/pages/vivo/VivoCelularFormPage.jsx';
+import VivoAcessorioFormPage from '/src/pages/vivo/VivoAcessorioFormPage.jsx';
 
 // Estilos globais adicionais
 import './global.css';
