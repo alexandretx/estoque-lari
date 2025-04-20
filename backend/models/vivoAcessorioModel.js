@@ -41,4 +41,4 @@ const vivoAcessorioSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('VivoAcessorio', vivoAcessorioSchema); 
+module.exports = mongoose.model('VivoAcessorio', vivoAcessorioSchema);

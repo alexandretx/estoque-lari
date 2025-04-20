@@ -68,4 +68,4 @@ const VivoCelularSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-module.exports = mongoose.model('VivoCelular', VivoCelularSchema); 
+module.exports = mongoose.model('VivoCelular', VivoCelularSchema);

@@ -13,4 +13,4 @@ router.get('/stats', protect, getVivoDashboardStats);
 // @access  Private
 router.get('/activities', protect, getVivoActivities);
 
-module.exports = router; 
+module.exports = router;

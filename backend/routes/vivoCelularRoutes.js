@@ -23,4 +23,4 @@ router.route('/:id')
     .put(updateVivoCelular)
     .delete(deleteVivoCelular);
 
-module.exports = router; 
+module.exports = router;

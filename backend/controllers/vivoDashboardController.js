@@ -97,4 +97,4 @@ const getVivoActivities = asyncHandler(async (req, res) => {
 module.exports = {
   getVivoDashboardStats,
   getVivoActivities
-}; 
+};

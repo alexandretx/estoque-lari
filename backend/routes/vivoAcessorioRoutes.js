@@ -23,4 +23,4 @@ router.route('/:id')
     .put(updateVivoAcessorio)
     .delete(deleteVivoAcessorio);
 
-module.exports = router; 
+module.exports = router;

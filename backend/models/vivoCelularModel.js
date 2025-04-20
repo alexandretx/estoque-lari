@@ -54,4 +54,4 @@ const vivoCelularSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('VivoCelular', vivoCelularSchema); 
+module.exports = mongoose.model('VivoCelular', vivoCelularSchema);
