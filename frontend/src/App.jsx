@@ -11,15 +11,10 @@ import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
-import CelularesPage from './pages/CelularesPage';
+import CelularesPage from './pages/CelularesPage'; // Será criado a seguir
 import AcessoriosPage from './pages/AcessoriosPage';
 import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
-import VivoPage from './pages/VivoPage';
-import VivoCelularesPage from './pages/vivo/VivoCelularesPage';
-import VivoAcessoriosPage from './pages/vivo/VivoAcessoriosPage';
-import VivoCelularFormPage from './pages/vivo/VivoCelularFormPage';
-import VivoAcessorioFormPage from './pages/vivo/VivoAcessorioFormPage';
 
 // Estilos globais adicionais
 import './global.css';
@@ -51,15 +46,6 @@ function App() {
               <Route path="/acessorios" element={<AcessoriosPage />} />
               <Route path="/acessorios/novo" element={<AcessorioFormPage />} />
               <Route path="/acessorios/editar/:id" element={<AcessorioFormPage />} />
-              
-              {/* Rotas Vivo */}
-              <Route path="/vivo" element={<VivoPage />} />
-              <Route path="/vivo/celulares" element={<VivoCelularesPage />} />
-              <Route path="/vivo/celulares/novo" element={<VivoCelularFormPage />} />
-              <Route path="/vivo/celulares/editar/:id" element={<VivoCelularFormPage />} />
-              <Route path="/vivo/acessorios" element={<VivoAcessoriosPage />} />
-              <Route path="/vivo/acessorios/novo" element={<VivoAcessorioFormPage />} />
-              <Route path="/vivo/acessorios/editar/:id" element={<VivoAcessorioFormPage />} />
           </Route>
 
           {/* Rota Not Found (Opcional) */}
