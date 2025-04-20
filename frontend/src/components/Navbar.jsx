@@ -45,7 +45,6 @@ const Navbar = () => {
               <Link to="/dashboard" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Dashboard</Link>
               <Link to="/celulares" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Celulares</Link>
               <Link to="/acessorios" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Acessórios</Link>
-              <Link to="/planos" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Planos</Link>
               <span className="border-l border-gray-600 pl-4 ml-2">Olá, {user.nome}!</span>
               <button
                 onClick={handleLogout}
@@ -88,7 +87,6 @@ const Navbar = () => {
                 <Link to="/dashboard" onClick={closeMenu} className="px-2 py-2 rounded hover:bg-gray-700 transition-colors">Dashboard</Link>
                 <Link to="/celulares" onClick={closeMenu} className="px-2 py-2 rounded hover:bg-gray-700 transition-colors">Celulares</Link>
                 <Link to="/acessorios" onClick={closeMenu} className="px-2 py-2 rounded hover:bg-gray-700 transition-colors">Acessórios</Link>
-                <Link to="/planos" onClick={closeMenu} className="px-2 py-2 rounded hover:bg-gray-700 transition-colors">Planos</Link>
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 px-3 py-2 text-left rounded text-sm transition-colors duration-200 mt-2"
