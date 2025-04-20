@@ -19,11 +19,11 @@ import VivoPage from './pages/VivoPage';
 import PlanosPage from './pages/PlanosPage';
 import PlanoFormPage from './pages/PlanoFormPage';
 
-// Páginas Vivo - importação absoluta para evitar problemas de resolução
-import VivoCelularesPage from '/src/pages/vivo/VivoCelularesPage.jsx';
-import VivoAcessoriosPage from '/src/pages/vivo/VivoAcessoriosPage.jsx';
-import VivoCelularFormPage from '/src/pages/vivo/VivoCelularFormPage.jsx';
-import VivoAcessorioFormPage from '/src/pages/vivo/VivoAcessorioFormPage.jsx';
+// Importações das Páginas Vivo - usando path relativo completo sem alias
+import VivoCelularesPage from '../src/pages/vivo/VivoCelularesPage.jsx';
+import VivoAcessoriosPage from '../src/pages/vivo/VivoAcessoriosPage.jsx';
+import VivoCelularFormPage from '../src/pages/vivo/VivoCelularFormPage.jsx';
+import VivoAcessorioFormPage from '../src/pages/vivo/VivoAcessorioFormPage.jsx';
 
 // Estilos globais adicionais
 import './global.css';
