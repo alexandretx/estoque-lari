@@ -19,7 +19,7 @@ import VivoPage from './pages/VivoPage';
 import PlanosPage from './pages/PlanosPage';
 import PlanoFormPage from './pages/PlanoFormPage';
 
-// Importações das Páginas Vivo via barrel file
+// Importações das Páginas Vivo - usando o barrel file
 import { 
   VivoCelularesPage, 
   VivoAcessoriosPage, 

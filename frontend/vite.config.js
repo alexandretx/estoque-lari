@@ -10,4 +10,10 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    // Evitar considerando paths começando com / como externos
+    rollupOptions: {
+      external: []
+    }
+  }
 })
