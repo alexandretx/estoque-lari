@@ -20,9 +20,13 @@ import VivoCelularesPage from './pages/vivo/VivoCelularesPage';
 import VivoAcessoriosPage from './pages/vivo/VivoAcessoriosPage';
 import VivoCelularFormPage from './pages/vivo/VivoCelularFormPage';
 import VivoAcessorioFormPage from './pages/vivo/VivoAcessorioFormPage';
+import PlanosPage from './pages/PlanosPage';
+import PlanoFormPage from './pages/PlanoFormPage';
 
 // Estilos globais adicionais
 import './global.css';
+// Toastify CSS
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   // Detectar se é um dispositivo móvel
