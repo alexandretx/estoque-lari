@@ -18,7 +18,7 @@ const CelularFormPage = () => {
     dataCompra: '',
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams(); // Pega o ID da URL se estiver editando
@@ -53,28 +53,29 @@ const CelularFormPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
 
-    // Converte valorCompra para número
-    const celularData = {
-        ...celular,
-        valorCompra: parseFloat(celular.valorCompra.toString().replace('.', '').replace(',', '.')),
-        // Garante que campos numéricos sejam enviados como números
-        armazenamento: celular.armazenamento ? parseInt(celular.armazenamento, 10) : undefined,
-        ram: celular.ram ? parseInt(celular.ram, 10) : undefined,
-    };
-
-    // Remove campos vazios ou nulos que não são obrigatórios no backend
-    Object.keys(celularData).forEach(key => {
-        if (celularData[key] === '' || celularData[key] === null || celularData[key] === undefined) {
-            // Mantém campos obrigatórios ou específicos mesmo que vazios para validação no backend se necessário
-            // Por exemplo, se 'imei' fosse opcional, poderíamos deletar:
-            // if (key !== 'marca' && key !== 'modelo' /* etc */) delete celularData[key];
-            // Neste caso, vamos enviar como está para o backend validar
-        }
-    });
+    // Valida campos obrigatórios
+    if (!celular.marca || !celular.modelo || !celular.imei) {
+      setError('Os campos Marca, Modelo e IMEI são obrigatórios.');
+      toast.error('Os campos Marca, Modelo e IMEI são obrigatórios.');
+      setLoading(false);
+      return;
+    }
 
     try {
+      // Prepara os dados para envio
+      const celularData = {
+        ...celular,
+        // Garantir que o valor compra seja enviado como número
+        valorCompra: celular.valorCompra 
+          ? parseFloat(celular.valorCompra.toString().replace(/\./g, '').replace(',', '.')) 
+          : 0,
+        // Garantir que armazenamento e ram sejam números
+        armazenamento: celular.armazenamento ? parseInt(celular.armazenamento, 10) : 0,
+        ram: celular.ram ? parseInt(celular.ram, 10) : 0
+      };
+
       if (isEditing) {
         await axios.put(`${API_CELULARES_URL}/${id}`, celularData);
         toast.success('Celular atualizado com sucesso!');
@@ -82,13 +83,14 @@ const CelularFormPage = () => {
         await axios.post(API_CELULARES_URL, celularData);
         toast.success('Celular adicionado com sucesso!');
       }
-      navigate('/celulares'); // Redireciona para a lista após sucesso
+      navigate('/celulares');
     } catch (err) {
-      console.error("Erro ao salvar celular:", err.response?.data?.message || err.message);
-      toast.error(err.response?.data?.message || 'Erro ao salvar celular. Verifique os dados.');
-      setLoading(false);
+      console.error('Erro ao salvar celular:', err);
+      const mensagemErro = err.response?.data?.message || 'Ocorreu um erro ao salvar o celular.';
+      setError(mensagemErro);
+      toast.error(mensagemErro);
     } finally {
-      // Não seta loading false aqui porque o navigate acontece em caso de sucesso
+      setLoading(false);
     }
   };
 
@@ -101,6 +103,8 @@ const CelularFormPage = () => {
       </h2>
 
       <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
+        
         {/* Linha 1: Marca, Modelo, IMEI */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
@@ -182,36 +186,29 @@ const CelularFormPage = () => {
 
         {/* Linha 3: Valor Compra, Data Compra */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-           <div>
-                <label htmlFor="valorCompra" className="block text-gray-700 text-sm font-bold mb-2">Valor Compra (R$)</label>
-                <input
-                type="text" // Usar text para facilitar máscara/formatação
-                id="valorCompra"
-                name="valorCompra"
-                value={celular.valorCompra.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                onChange={handleChange}
-                onBlur={(e) => {
-                    // Formata ao perder o foco, mas o state guarda o valor numérico
-                    let value = e.target.value.replace(/\./g, '').replace(',', '.');
-                    if (!isNaN(parseFloat(value))) {
-                        setCelular({...celular, valorCompra: parseFloat(value)});
-                    }
-                }}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="0,00"
-                />
-            </div>
-            <div>
-                <label htmlFor="dataCompra" className="block text-gray-700 text-sm font-bold mb-2">Data Compra</label>
-                <input
-                type="date"
-                id="dataCompra"
-                name="dataCompra"
-                value={celular.dataCompra}
-                onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
+          <div>
+            <label htmlFor="valorCompra" className="block text-gray-700 text-sm font-bold mb-2">Valor Compra (R$)</label>
+            <input
+              type="text"
+              id="valorCompra"
+              name="valorCompra"
+              value={celular.valorCompra}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              placeholder="0,00"
+            />
+          </div>
+          <div>
+            <label htmlFor="dataCompra" className="block text-gray-700 text-sm font-bold mb-2">Data Compra</label>
+            <input
+              type="date"
+              id="dataCompra"
+              name="dataCompra"
+              value={celular.dataCompra}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
         </div>
 
         {/* Linha 4: Observações */}
