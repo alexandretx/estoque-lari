@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { DashboardSkeleton } from '../components/SkeletonLoader';
 
-const API_STATS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/stats`;
-const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activities`;
+const API_VIVO_STATS_URL = `${import.meta.env.VITE_API_URL}/api/vivo/stats`;
+const API_VIVO_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/vivo/activities`;
 
 // Componente de Card reutilizável com ícone e animação
-const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
+const StatCard = ({ title, value, linkTo, bgColor = 'bg-purple-500', borderColor = 'border-purple-600', icon, subtext }) => (
   <Link to={linkTo} className={`block p-3 sm:p-4 md:p-6 rounded-lg shadow-md bg-white border-t-4 ${borderColor} hover:shadow-lg transition-all duration-300`}>
     <div className="flex justify-between items-start">
       <div>
@@ -27,7 +26,7 @@ const SimpleBarChart = ({ data, title }) => {
   const maxValue = Math.max(...data.map(item => item.value));
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 col-span-1 md:col-span-2 lg:col-span-3">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 col-span-1 md:col-span-2">
       <h3 className="text-sm md:text-lg font-semibold text-gray-700 mb-2 md:mb-4">{title}</h3>
       <div className="space-y-3 md:space-y-4">
         {data.map((item, index) => (
@@ -49,7 +48,7 @@ const SimpleBarChart = ({ data, title }) => {
   );
 };
 
-// Componente para Atividades Recentes (agora buscando do backend)
+// Componente para Atividades Recentes
 const RecentActivities = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,10 +58,10 @@ const RecentActivities = () => {
     const fetchActivities = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(API_ACTIVITIES_URL);
+        const response = await axios.get(API_VIVO_ACTIVITIES_URL);
         setActivities(response.data);
       } catch (err) {
-        console.error("Erro ao buscar atividades:", err);
+        console.error("Erro ao buscar atividades da Vivo:", err);
         setError("Não foi possível carregar atividades recentes");
       } finally {
         setLoading(false);
@@ -106,8 +105,8 @@ const RecentActivities = () => {
         <div className="space-y-3 sm:space-y-4">
           {activities.map((activity, index) => (
             <div key={index} className="flex items-start pb-3 sm:pb-4 border-b border-gray-100">
-              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
@@ -135,9 +134,14 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
     </svg>
   ),
+  vivo: (
+    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    </svg>
+  ),
 };
 
-const DashboardPage = () => {
+const VivoPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,40 +155,67 @@ const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(API_STATS_URL);
+      const response = await axios.get(API_VIVO_STATS_URL);
       setStats(response.data);
     } catch (err) {
-      console.error("Erro ao buscar estatísticas:", err.response?.data?.message || err.message);
+      console.error("Erro ao buscar estatísticas da Vivo:", err.response?.data?.message || err.message);
       setError(err.response?.data?.message || 'Erro ao carregar estatísticas.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Preparar dados para o gráfico de barras
+  // Dados para o gráfico de barras (mock, pois a API pode não existir ainda)
   const chartData = stats ? [
-    { label: 'Celulares', value: stats.celulares, color: 'bg-blue-600' },
-    { label: 'Acessórios', value: stats.acessorios, color: 'bg-green-600' }
+    { label: 'Celulares', value: stats.celulares || 0, color: 'bg-purple-600' },
+    { label: 'Acessórios', value: stats.acessorios || 0, color: 'bg-indigo-600' }
   ] : [];
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">Dashboard</h2>
-          {user && (
-            <p className="mt-1 text-xs sm:text-sm text-gray-600">Bem-vindo(a) de volta, <span className="font-medium text-gray-800">{user.nome}</span></p>
-          )}
+          <div className="flex items-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">Vivo</h2>
+            <div className="ml-2 p-1 sm:p-1.5 bg-purple-100 rounded-full">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+          </div>
+          <p className="mt-1 text-xs sm:text-sm text-gray-600">Gerenciamento do estoque da loja Vivo</p>
         </div>
         <button 
           onClick={fetchStats} 
-          className="mt-3 sm:mt-0 px-3 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center sm:justify-start text-xs sm:text-sm w-full sm:w-auto"
+          className="mt-3 sm:mt-0 px-3 py-1.5 sm:py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex items-center justify-center sm:justify-start text-xs sm:text-sm w-full sm:w-auto"
         >
           <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
           </svg>
           Atualizar
         </button>
+      </div>
+
+      <div className="bg-purple-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 border border-purple-100">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-shrink-0 bg-purple-100 p-2 rounded-full">
+            <svg className="w-5 h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-medium text-sm text-purple-800">Estoque separado</h3>
+            <p className="text-xs text-purple-700">Este é um estoque independente para os produtos da loja Vivo, separado do estoque principal.</p>
+          </div>
+          <div className="flex-shrink-0 sm:ml-auto mt-2 sm:mt-0">
+            <Link to="/vivo/celulares" className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded inline-flex items-center">
+              <span>Ver produtos</span>
+              <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {loading && (
@@ -214,30 +245,60 @@ const DashboardPage = () => {
 
       {!loading && stats && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-            <StatCard
-              title="Celulares em Estoque"
-              value={stats.celulares}
-              linkTo="/celulares"
-              bgColor="bg-blue-600"
-              borderColor="border-blue-600"
-              icon={Icons.celular}
-              subtext="Gerenciar celulares"
-            />
-            <StatCard
-              title="Acessórios em Estoque"
-              value={stats.acessorios}
-              linkTo="/acessorios"
-              bgColor="bg-green-600"
-              borderColor="border-green-600"
-              icon={Icons.acessorio}
-              subtext="Gerenciar acessórios"
-            />
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+            <div className="w-full sm:w-1/2">
+              <StatCard
+                title="Celulares Vivo"
+                value={stats.celulares || 0}
+                linkTo="/vivo/celulares"
+                bgColor="bg-purple-600"
+                borderColor="border-purple-600"
+                icon={Icons.celular}
+                subtext="Gerenciar celulares Vivo"
+              />
+            </div>
+            <div className="w-full sm:w-1/2">
+              <StatCard
+                title="Acessórios Vivo"
+                value={stats.acessorios || 0}
+                linkTo="/vivo/acessorios"
+                bgColor="bg-indigo-600"
+                borderColor="border-indigo-600"
+                icon={Icons.acessorio}
+                subtext="Gerenciar acessórios Vivo"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
-            <SimpleBarChart data={chartData} title="Visão Geral do Estoque" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+            <SimpleBarChart data={chartData} title="Visão Geral do Estoque Vivo" />
             <RecentActivities />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mt-4 sm:mt-6">
+            <Link to="/vivo/celulares/novo" className="bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-100 flex items-center">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-sm text-gray-800">Adicionar Celular Vivo</h3>
+                <p className="text-xs text-gray-500">Cadastrar novo celular no estoque Vivo</p>
+              </div>
+            </Link>
+            
+            <Link to="/vivo/acessorios/novo" className="bg-white p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-100 flex items-center">
+              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-sm text-gray-800">Adicionar Acessório Vivo</h3>
+                <p className="text-xs text-gray-500">Cadastrar novo acessório no estoque Vivo</p>
+              </div>
+            </Link>
           </div>
         </>
       )}
@@ -248,9 +309,9 @@ const DashboardPage = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <h3 className="mt-2 text-xs font-medium text-gray-900 sm:text-sm">Sem dados disponíveis</h3>
-          <p className="mt-1 text-xs text-gray-500">Não foi possível carregar as estatísticas.</p>
+          <p className="mt-1 text-xs text-gray-500">Não foi possível carregar as estatísticas do estoque Vivo.</p>
           <div className="mt-4 sm:mt-6">
-            <button onClick={fetchStats} className="bg-blue-600 px-3 py-1.5 text-white rounded-md text-xs sm:text-sm hover:bg-blue-700">Tentar Novamente</button>
+            <button onClick={fetchStats} className="bg-purple-600 px-3 py-1.5 text-white rounded-md text-xs sm:text-sm hover:bg-purple-700">Tentar Novamente</button>
           </div>
         </div>
       )}
@@ -258,4 +319,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage; 
+export default VivoPage; 

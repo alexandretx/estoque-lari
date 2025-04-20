@@ -1,4 +1,5 @@
 const Celular = require('../models/Celular');
+const { registerActivity } = require('./activityController');
 
 // @desc    Listar todos os celulares
 // @route   GET /api/celulares
@@ -70,6 +71,16 @@ exports.createCelular = async (req, res) => {
             valor,
             // user: req.user.id // Associa o celular ao usuário logado
         });
+
+        // Registrar atividade
+        await registerActivity(
+            'Celular adicionado',
+            `${marca} ${modelo}`,
+            celular._id,
+            'celular',
+            req.user
+        );
+
         res.status(201).json(celular);
     } catch (error) {
         console.error('Erro ao cadastrar celular:', error);
@@ -123,6 +134,15 @@ exports.updateCelular = async (req, res) => {
         await celular.validate();
         const celularAtualizado = await celular.save();
 
+        // Registrar atividade
+        await registerActivity(
+            'Celular atualizado',
+            `${celularAtualizado.marca} ${celularAtualizado.modelo}`,
+            celularAtualizado._id,
+            'celular',
+            req.user
+        );
+
         res.status(200).json(celularAtualizado);
     } catch (error) {
         console.error('Erro ao atualizar celular:', error);
@@ -153,7 +173,19 @@ exports.deleteCelular = async (req, res) => {
         //     return res.status(401).json({ message: 'Não autorizado a excluir este celular' });
         // }
 
+        const celularInfo = `${celular.marca} ${celular.modelo}`;
+        const celularId = celular._id;
+
         await celular.deleteOne(); // Ou celular.remove() dependendo da versão do Mongoose
+
+        // Registrar atividade
+        await registerActivity(
+            'Celular excluído',
+            celularInfo,
+            celularId,
+            'celular',
+            req.user
+        );
 
         res.status(200).json({ message: 'Celular excluído com sucesso' });
     } catch (error) {
