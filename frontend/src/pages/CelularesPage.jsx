@@ -70,6 +70,10 @@ const CelularCard = ({ celular, onEdit, onDelete }) => (
       <span className="text-gray-500">Cor:</span>
       <span className="text-gray-900">{celular.cor || '-'}</span>
     </div>
+    <div className="flex justify-between text-sm border-b pb-2 mb-2">
+      <span className="text-gray-500">Armazenamento:</span>
+      <span className="text-gray-900">{celular.armazenamento || '-'}</span>
+    </div>
     {celular.observacoes && (
       <div className="mt-2 pt-2 border-t border-gray-100">
         <p className="text-xs text-gray-500">Observações:</p>
@@ -218,7 +222,7 @@ const CelularesPage = () => {
       <div className="mb-4">
         <input 
           type="text"
-          placeholder="Buscar por marca, modelo, IMEI ou observação..."
+          placeholder="Buscar por marca, modelo, IMEI, armaz. ou observação..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -269,6 +273,9 @@ const CelularesPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('cor')}>
                 Cor {renderSortIndicator('cor')}
               </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('armazenamento')}>
+                Armaz. {renderSortIndicator('armazenamento')}
+              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('createdAt')}>
                 Cadastro {renderSortIndicator('createdAt')}
               </th>
@@ -278,10 +285,10 @@ const CelularesPage = () => {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={limit} cols={6} />
+              <TableSkeleton rows={limit} cols={7} />
             ) : celulares.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="7" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                    {debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
                 </td>
               </tr>
@@ -297,6 +304,9 @@ const CelularesPage = () => {
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{celular.cor || '-'}</p>
+                  </td>
+                  <td className="px-5 py-4 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">{celular.armazenamento || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">

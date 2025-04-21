@@ -10,18 +10,19 @@ exports.getCelulares = async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
         const searchTerm = req.query.search || '';
-        const sortBy = req.query.sortBy || 'createdAt'; // Campo padrão para ordenar
-        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1; // Ordem: 1 para asc, -1 para desc
+        const sortBy = req.query.sortBy || 'marca'; // Campo padrão para ordenar (agora marca)
+        const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // Ordem: 1 para asc, -1 para desc
 
-        // Filtro de busca
+        // Filtro de busca - Incluir armazenamento
         let queryFilter = {};
         if (searchTerm) {
-            const regex = new RegExp(searchTerm, 'i');
+            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive
             queryFilter = {
                 $or: [
                     { marca: regex },
                     { modelo: regex },
                     { imei: regex }, 
+                    { armazenamento: regex }, // Adicionado armazenamento à busca
                     { observacoes: regex }
                 ]
             };
@@ -29,12 +30,18 @@ exports.getCelulares = async (req, res) => {
 
         // Opções de ordenação
         const sortOptions = {};
-        sortOptions[sortBy] = sortOrder;
+        // Validar sortBy para evitar erros se um campo inválido for passado
+        const validSortKeys = ['marca', 'modelo', 'imei', 'armazenamento', 'cor', 'createdAt', 'dataCompra', 'valorCompra'];
+        if (validSortKeys.includes(sortBy)) {
+            sortOptions[sortBy] = sortOrder;
+        } else {
+            sortOptions['marca'] = 1; // Fallback para marca ascendente
+        }
 
         const totalCelulares = await Celular.countDocuments(queryFilter); 
 
         const celulares = await Celular.find(queryFilter)
-            .sort(sortOptions) // Aplicar ordenação dinâmica
+            .sort(sortOptions)
             .skip(skip)
             .limit(limit);
             
