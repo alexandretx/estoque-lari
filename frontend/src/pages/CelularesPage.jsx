@@ -92,7 +92,7 @@ const CelularesPage = () => {
   const [limit] = useState(10);
   const navigate = useNavigate();
   const firstRender = useRef(true);
-  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'marca', direction: 'asc' });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -156,8 +156,13 @@ const CelularesPage = () => {
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
+    else if (sortConfig.key !== key) {
+        direction = 'asc';
+    }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
+    if (currentPage !== 1) {
+        setCurrentPage(1);
+    }
   };
 
   const confirmDelete = (id) => {
@@ -173,11 +178,8 @@ const CelularesPage = () => {
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
       toast.success('Celular excluído com sucesso!');
-      if (celulares.length === 1 && currentPage > 1) {
-        fetchCelulares(currentPage - 1, debouncedSearchTerm, sortConfig);
-      } else {
-        fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
-      }
+      const pageToFetch = (celulares.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
+      fetchCelulares(pageToFetch, debouncedSearchTerm, sortConfig);
     } catch (err) {
       console.error("Erro ao excluir celular:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
@@ -267,16 +269,19 @@ const CelularesPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('cor')}>
                 Cor {renderSortIndicator('cor')}
               </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('createdAt')}>
+                Cadastro {renderSortIndicator('createdAt')}
+              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={limit} cols={5} />
+              <TableSkeleton rows={limit} cols={6} />
             ) : celulares.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="6" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                    {debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
                 </td>
               </tr>
@@ -292,6 +297,11 @@ const CelularesPage = () => {
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{celular.cor || '-'}</p>
+                  </td>
+                  <td className="px-5 py-4 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">
+                      {celular.createdAt ? new Date(celular.createdAt).toLocaleDateString('pt-BR') : '-'} 
+                    </p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={celular.observacoes}>{celular.observacoes || '-'}</p>

@@ -50,26 +50,25 @@ const AcessoriosPage = () => {
   const [limit] = useState(10);
   const navigate = useNavigate();
   const firstRender = useRef(true); 
-  // Estado de Ordenação
-  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  // Definir ordenação inicial por marca ascendente
+  const [sortConfig, setSortConfig] = useState({ key: 'marca', direction: 'asc' });
 
   // Debounce para searchTerm
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (!firstRender.current || searchTerm !== debouncedSearchTerm) {
-          if(currentPage !== 1) setCurrentPage(1);
-          setDebouncedSearchTerm(searchTerm);
-      }
-      if(firstRender.current) firstRender.current = false;
+        setDebouncedSearchTerm(searchTerm);
+        // Resetar para a página 1 ao digitar um novo termo de busca
+        if (searchTerm !== debouncedSearchTerm) {
+            setCurrentPage(1);
+        }
     }, 300);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm, currentPage]); 
+    return () => clearTimeout(handler);
+  }, [searchTerm]); 
 
   // Função de busca com ordenação
-  const fetchAcessorios = useCallback(async (pageToFetch = 1, currentSearchTerm = '', currentSortConfig = { key: 'createdAt', direction: 'desc' }) => {
+  const fetchAcessorios = useCallback(async (pageToFetch, currentSearchTerm, currentSortConfig) => {
     setLoading(true);
+    console.log(`Buscando Acessórios: Página ${pageToFetch}, Busca: '${currentSearchTerm}', Ordenação: ${currentSortConfig.key} ${currentSortConfig.direction}`); // Log
     try {
       const params = { 
           page: pageToFetch,
@@ -94,13 +93,11 @@ const AcessoriosPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [limit]);
+  }, []); // useCallback sem dependências complexas
 
   // Buscar ao montar e quando a página, busca (debounced) ou ordenação mudar
   useEffect(() => {
-       if (!firstRender.current || debouncedSearchTerm || sortConfig.key !== 'createdAt') {
-            fetchAcessorios(currentPage, debouncedSearchTerm, sortConfig);
-       }
+     fetchAcessorios(currentPage, debouncedSearchTerm, sortConfig);
   }, [currentPage, debouncedSearchTerm, sortConfig, fetchAcessorios]);
 
   // Handler para mudança de página
@@ -115,9 +112,16 @@ const AcessoriosPage = () => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
+    } 
+    // Se clicar em uma coluna diferente, sempre começa ascendente
+    else if (sortConfig.key !== key) {
+        direction = 'asc';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
+     // Resetar para a página 1 ao mudar a ordenação é opcional, mas comum
+    if (currentPage !== 1) {
+        setCurrentPage(1);
+    }
   };
 
   const confirmDelete = (id) => {
@@ -133,11 +137,9 @@ const AcessoriosPage = () => {
     try {
       await axios.delete(`${API_ACESSORIOS_URL}/${idToDelete}`);
       toast.success('Acessório excluído com sucesso!');
-      if (acessorios.length === 1 && currentPage > 1) {
-        fetchAcessorios(currentPage - 1, debouncedSearchTerm, sortConfig);
-      } else {
-        fetchAcessorios(currentPage, debouncedSearchTerm, sortConfig);
-      }
+       // Após excluir, buscar novamente na página atual ou anterior se for o último item
+       const pageToFetch = (acessorios.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
+      fetchAcessorios(pageToFetch, debouncedSearchTerm, sortConfig);
     } catch (err) {
       console.error("Erro ao excluir acessório:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir acessório.');
@@ -156,9 +158,9 @@ const AcessoriosPage = () => {
         return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
     }
     if (sortConfig.direction === 'asc') {
-      return <span className="ml-1">▲</span>; // Seta para cima
+      return <span className="ml-1">▲</span>;
     }
-    return <span className="ml-1">▼</span>; // Seta para baixo
+    return <span className="ml-1">▼</span>;
   };
 
   return (
@@ -199,25 +201,33 @@ const AcessoriosPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('tipo')}>
                 Tipo {renderSortIndicator('tipo')}
               </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('createdAt')}>
+                Cadastro {renderSortIndicator('createdAt')}
+              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={limit} cols={5} />
+              <TableSkeleton rows={limit} cols={6} />
             ) : acessorios.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="6" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                   {debouncedSearchTerm ? 'Nenhum acessório encontrado.' : 'Nenhum acessório cadastrado.'}
                 </td>
               </tr>
             ) : (
               acessorios.map((acessorio) => (
                 <tr key={acessorio._id} className="hover:bg-gray-50">
-                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.marca}</p></td>
-                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.modelo}</p></td>
-                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.tipo}</p></td>
+                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.marca || '-'}</p></td>
+                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.modelo || '-'}</p></td>
+                  <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.tipo || '-'}</p></td>
+                  <td className="px-5 py-4 bg-white text-sm">
+                    <p className="text-gray-900 whitespace-no-wrap">
+                      {acessorio.createdAt ? new Date(acessorio.createdAt).toLocaleDateString('pt-BR') : '-'} 
+                    </p>
+                  </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={acessorio.observacoes}>{acessorio.observacoes || '-'}</p>
                   </td>
