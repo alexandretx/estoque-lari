@@ -10,7 +10,6 @@ const AcessorioFormPage = () => {
     marca: '',
     modelo: '',
     tipo: '',
-    valorProduto: '', // Corrigido para valorProduto
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,9 +23,7 @@ const AcessorioFormPage = () => {
       setLoading(true);
       axios.get(`${API_ACESSORIOS_URL}/${id}`)
         .then(response => {
-          // Formata valor para exibição se necessário (ex: número para string com vírgula)
-           const valorFormatado = response.data.valorProduto ? response.data.valorProduto.toString().replace('.', ',') : '';
-          setAcessorio({ ...response.data, valorProduto: valorFormatado });
+          setAcessorio({ ...response.data });
           setLoading(false);
         })
         .catch(err => {
@@ -50,19 +47,14 @@ const AcessorioFormPage = () => {
     setLoading(true);
     setError(null);
 
-    // Converte valorProduto para número antes de enviar
-    const acessorioData = {
-        ...acessorio,
-        valorProduto: parseFloat(acessorio.valorProduto.toString().replace('.', '').replace(',', '.')),
-    };
+    const acessorioData = { ...acessorio };
 
      // Validação simples no frontend (opcional, backend deve validar também)
-    if (!acessorioData.marca || !acessorioData.modelo || !acessorioData.tipo || isNaN(acessorioData.valorProduto)) {
+    if (!acessorioData.marca || !acessorioData.modelo || !acessorioData.tipo) {
         setError('Por favor, preencha todos os campos obrigatórios corretamente.');
         setLoading(false);
         return;
     }
-
 
     try {
       if (isEditing) {
@@ -119,36 +111,20 @@ const AcessorioFormPage = () => {
           </div>
         </div>
 
-        {/* Linha 2: Tipo e Valor Produto */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">Tipo *</label>
-            <input
-              type="text"
-              id="tipo"
-              name="tipo"
-              value={acessorio.tipo}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
-              placeholder="Ex: Carregador, Fone, Capa"
-            />
-          </div>
-           <div>
-                <label htmlFor="valorProduto" className="block text-gray-700 text-sm font-bold mb-2">Valor Produto (R$) *</label>
-                <input
-                type="text" // Usar text para facilitar máscara/formatação com vírgula
-                id="valorProduto"
-                name="valorProduto"
-                value={acessorio.valorProduto} // Exibe o valor formatado do state
-                onChange={handleChange} // Atualiza o state como string
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="0,00"
-                required
-                />
-            </div>
+        {/* Tipo */}
+        <div className="mb-6">
+          <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">Tipo *</label>
+          <input
+            type="text"
+            id="tipo"
+            name="tipo"
+            value={acessorio.tipo}
+            onChange={handleChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+            placeholder="Ex: Carregador, Fone, Capa"
+          />
         </div>
-
 
         {/* Botões */}
         <div className="flex items-center justify-between">

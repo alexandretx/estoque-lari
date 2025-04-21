@@ -14,7 +14,6 @@ const CelularFormPage = () => {
     ram: '',
     cor: '',
     observacoes: '',
-    valorCompra: '',
     dataCompra: '',
   });
   const [loading, setLoading] = useState(false);
@@ -55,10 +54,9 @@ const CelularFormPage = () => {
     setLoading(true);
     setError(null);
 
-    // Converte valorCompra para número
+    // Garante que campos numéricos sejam enviados como números
     const celularData = {
         ...celular,
-        valorCompra: parseFloat(celular.valorCompra.toString().replace('.', '').replace(',', '.')),
         // Garante que campos numéricos sejam enviados como números
         armazenamento: celular.armazenamento ? parseInt(celular.armazenamento, 10) : undefined,
         ram: celular.ram ? parseInt(celular.ram, 10) : undefined,
@@ -180,38 +178,17 @@ const CelularFormPage = () => {
           </div>
         </div>
 
-        {/* Linha 3: Valor Compra, Data Compra */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-           <div>
-                <label htmlFor="valorCompra" className="block text-gray-700 text-sm font-bold mb-2">Valor Compra (R$)</label>
-                <input
-                type="text" // Usar text para facilitar máscara/formatação
-                id="valorCompra"
-                name="valorCompra"
-                value={celular.valorCompra.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                onChange={handleChange}
-                onBlur={(e) => {
-                    // Formata ao perder o foco, mas o state guarda o valor numérico
-                    let value = e.target.value.replace(/\./g, '').replace(',', '.');
-                    if (!isNaN(parseFloat(value))) {
-                        setCelular({...celular, valorCompra: parseFloat(value)});
-                    }
-                }}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="0,00"
-                />
-            </div>
-            <div>
-                <label htmlFor="dataCompra" className="block text-gray-700 text-sm font-bold mb-2">Data Compra</label>
-                <input
-                type="date"
-                id="dataCompra"
-                name="dataCompra"
-                value={celular.dataCompra}
-                onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
+        {/* Data Compra */}
+        <div className="mb-4">
+            <label htmlFor="dataCompra" className="block text-gray-700 text-sm font-bold mb-2">Data Compra</label>
+            <input
+              type="date"
+              id="dataCompra"
+              name="dataCompra"
+              value={celular.dataCompra}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
         </div>
 
         {/* Linha 4: Observações */}
