@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboardStats, checkOldItems } = require('../controllers/dashboardController');
+const { getDashboardStats, getOldItems } = require('../controllers/dashboardController');
 const { getRecentActivities } = require('../controllers/activityController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,8 +15,8 @@ router.get('/stats', getDashboardStats);
 // GET /api/dashboard/activities
 router.get('/activities', getRecentActivities);
 
-// Rota para verificar itens antigos
-// GET /api/dashboard/check-old-items
-router.get('/check-old-items', checkOldItems);
+// Rota para buscar itens antigos
+// GET /api/dashboard/old-items
+router.get('/old-items', getOldItems);
 
 module.exports = router; 

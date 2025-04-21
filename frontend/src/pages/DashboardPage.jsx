@@ -3,10 +3,11 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
+import { PencilIcon, TrashIcon } from './../components/Icons';
 
 const API_STATS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/stats`;
 const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activities`;
-const API_CHECK_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/check-old-items`;
+const API_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/old-items`;
 
 // Componente de Card reutilizável com ícone e animação
 const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
@@ -138,12 +139,62 @@ const Icons = {
   ),
 };
 
+// Novo componente para listar itens antigos
+const OldItemsList = ({ items }) => {
+  if (!items || (items.oldCelulares.length === 0 && items.oldAcessorios.length === 0)) {
+    return null; // Não renderiza nada se não houver itens antigos
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Data não informada';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  return (
+    <div className="mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-md shadow-md">
+      <h3 className="font-bold text-sm mb-2">Atenção: Itens com mais de 180 dias no estoque</h3>
+      <div className="max-h-48 overflow-y-auto text-xs space-y-2 pr-2">
+        {items.oldCelulares.length > 0 && (
+          <div className="mb-2">
+            <p className="font-semibold mb-1">Celulares:</p>
+            {items.oldCelulares.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/celulares/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.marca} ${item.modelo}`}
+              >
+                <span>{item.marca} {item.modelo} (IMEI: {item.imei || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {items.oldAcessorios.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1">Acessórios:</p>
+            {items.oldAcessorios.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/acessorios/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
+              >
+                <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
-  const [showOldItemsWarning, setShowOldItemsWarning] = useState(false);
+  const [oldItems, setOldItems] = useState({ oldCelulares: [], oldAcessorios: [] });
 
   useEffect(() => {
     fetchDashboardData();
@@ -155,11 +206,11 @@ const DashboardPage = () => {
     try {
       const [statsResponse, oldItemsResponse] = await Promise.all([
         axios.get(API_STATS_URL),
-        axios.get(API_CHECK_OLD_ITEMS_URL)
+        axios.get(API_OLD_ITEMS_URL)
       ]);
       
       setStats(statsResponse.data);
-      setShowOldItemsWarning(oldItemsResponse.data.hasOldItems);
+      setOldItems(oldItemsResponse.data);
 
     } catch (err) {
       console.error("Erro ao buscar dados do dashboard:", err.response?.data?.message || err.message);
@@ -195,12 +246,7 @@ const DashboardPage = () => {
         </button>
       </div>
 
-      {showOldItemsWarning && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 sm:p-4 rounded-md relative mb-4 sm:mb-6 shadow-md" role="alert">
-          <p className="font-bold text-xs sm:text-sm">Atenção!</p>
-          <p className="text-xs">Existem itens no estoque com data de compra superior a 180 dias.</p>
-        </div>
-      )}
+      <OldItemsList items={oldItems} />
 
       {loading && (
         <div className="animate-pulse">

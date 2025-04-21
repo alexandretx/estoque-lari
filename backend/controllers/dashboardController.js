@@ -37,35 +37,29 @@ exports.getDashboardStats = async (req, res) => {
     }
 };
 
-// @desc    Verificar se existem itens com mais de 180 dias
-// @route   GET /api/dashboard/check-old-items
+// @desc    Listar itens com mais de 180 dias (modificado)
+// @route   GET /api/dashboard/old-items // Rota renomeada para clareza
 // @access  Private
-exports.checkOldItems = async (req, res) => {
+exports.getOldItems = async (req, res) => {
     try {
         const daysAgo = 180;
         const dateLimit = new Date();
         dateLimit.setDate(dateLimit.getDate() - daysAgo);
 
-        // Verifica se existe algum celular com dataCompra <= dateLimit
-        const oldCelular = await Celular.findOne({
+        // Buscar celulares antigos, selecionando campos relevantes
+        const oldCelulares = await Celular.find({
             dataCompra: { $lte: dateLimit }
-        });
+        }).select('marca modelo imei dataCompra'); // Selecionar campos necessários
 
-        // Se já encontrou um celular antigo, não precisa verificar acessórios
-        if (oldCelular) {
-            return res.status(200).json({ hasOldItems: true });
-        }
-
-        // Verifica se existe algum acessório com dataCompra <= dateLimit
-        const oldAcessorio = await Acessorio.findOne({
+        // Buscar acessórios antigos, selecionando campos relevantes
+        const oldAcessorios = await Acessorio.find({
             dataCompra: { $lte: dateLimit }
-        });
+        }).select('marca modelo tipo dataCompra'); // Selecionar campos necessários
         
-        // Retorna true se encontrou um acessório antigo, senão false
-        res.status(200).json({ hasOldItems: !!oldAcessorio });
+        res.status(200).json({ oldCelulares, oldAcessorios });
 
     } catch (error) {
-        console.error('Erro ao verificar itens antigos:', error);
-        res.status(500).json({ message: 'Erro interno do servidor ao verificar itens antigos' });
+        console.error('Erro ao buscar itens antigos:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao buscar itens antigos' });
     }
 }; 
