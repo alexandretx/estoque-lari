@@ -14,6 +14,7 @@ const CelularSchema = new mongoose.Schema({
     },
     imei: {
         type: String,
+        required: [true, 'Por favor, informe o IMEI do celular'],
         trim: true,
     },
     armazenamento: {
