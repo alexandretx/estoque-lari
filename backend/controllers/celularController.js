@@ -10,41 +10,64 @@ exports.getCelulares = async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
         const searchTerm = req.query.search || '';
-        const sortBy = req.query.sortBy || 'marca'; // Campo padrão para ordenar (agora marca)
-        const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // Ordem: 1 para asc, -1 para desc
+        const sortBy = req.query.sortBy || 'marca';
+        const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
 
-        // Filtro de busca - Incluir armazenamento
+        // Filtro de busca - Tratar armazenamento como string para busca
         let queryFilter = {};
         if (searchTerm) {
-            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive
+            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive para campos String
+            
+            // Condições para campos String
+            const stringFieldConditions = [
+                { marca: regex },
+                { modelo: regex },
+                { imei: regex }, 
+                { observacoes: regex },
+                // Adicionar outros campos String relevantes para busca aqui
+                // Ex: { cor: regex }
+            ];
+
+            // Condição para campo numérico 'armazenamento' (convertido para string)
+            const numberAsStringCondition = {
+                 $expr: { 
+                    $regexMatch: { 
+                        input: { $toString: "$armazenamento" }, // Converte armazenamento para string
+                        regex: searchTerm, // Passa o termo como string para a regex dentro do $expr
+                        options: "i" // Garante case-insensitivity na comparação regex
+                    }
+                } 
+            };
+            
+            // Combina as condições
             queryFilter = {
                 $or: [
-                    { marca: regex },
-                    { modelo: regex },
-                    { imei: regex }, 
-                    { armazenamento: regex }, // Adicionado armazenamento à busca
-                    { observacoes: regex }
+                    ...stringFieldConditions,
+                    numberAsStringCondition
+                    // Adicionar aqui a condição para 'ram' se for número e precisar buscar
+                    // { $expr: { $regexMatch: { input: { $toString: "$ram" }, regex: searchTerm, options: "i" } } }
                 ]
             };
         }
 
         // Opções de ordenação
         const sortOptions = {};
-        // Validar sortBy para evitar erros se um campo inválido for passado
-        const validSortKeys = ['marca', 'modelo', 'imei', 'armazenamento', 'cor', 'createdAt', 'dataCompra', 'valorCompra'];
+        // Certifique-se que todos os campos usados em `sortBy` existem no Schema
+        const validSortKeys = ['marca', 'modelo', 'imei', 'armazenamento', 'cor', 'createdAt', 'dataCompra', 'valorCompra', 'ram']; 
         if (validSortKeys.includes(sortBy)) {
             sortOptions[sortBy] = sortOrder;
         } else {
-            sortOptions['marca'] = 1; // Fallback para marca ascendente
+            console.warn(`Chave de ordenação inválida: ${sortBy}. Usando fallback para marca.`);
+            sortOptions['marca'] = 1; // Fallback seguro
         }
 
-        const totalCelulares = await Celular.countDocuments(queryFilter); 
+        const totalCelulares = await Celular.countDocuments(queryFilter);
 
         const celulares = await Celular.find(queryFilter)
             .sort(sortOptions)
             .skip(skip)
             .limit(limit);
-            
+
         res.status(200).json({
             celulares,
             currentPage: page,
@@ -52,8 +75,17 @@ exports.getCelulares = async (req, res) => {
             totalCelulares
         });
     } catch (error) {
-        console.error('Erro ao buscar celulares:', error);
-        res.status(500).json({ message: 'Erro interno do servidor' });
+        // Log mais detalhado do erro
+        console.error('Erro ao buscar celulares:', error.message);
+        if (error.name === 'CastError') {
+             console.error(`Detalhes CastError: Path: ${error.path}, Value: ${JSON.stringify(error.value)}, Kind: ${error.kind}`);
+        } else if (error.code === 51049) { // Código de erro comum para problemas de $expr/$toString
+             console.error('Erro potencial com $expr/$toString. Verifique a sintaxe da query e tipos de dados.', error);
+        } else {
+             console.error('Stack Trace:', error.stack);
+        }
+        
+        res.status(500).json({ message: 'Erro interno do servidor ao processar a busca de celulares.' }); 
     }
 };
 
