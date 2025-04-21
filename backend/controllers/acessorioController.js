@@ -86,8 +86,8 @@ exports.createAcessorio = async (req, res) => {
 // @route   PUT /api/acessorios/:id
 // @access  Private
 exports.updateAcessorio = async (req, res) => {
-    // Extrair tanto os campos novos quanto os antigos para compatibilidade
-    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor } = req.body;
+    // Extrair campos, incluindo observacoes
+    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor, observacoes } = req.body;
 
     try {
         let acessorio = await Acessorio.findById(req.params.id);
@@ -105,6 +105,7 @@ exports.updateAcessorio = async (req, res) => {
         acessorio.modelo = modelo ?? acessorio.modelo;
         acessorio.tipo = tipo ?? acessorio.tipo;
         acessorio.valorProduto = valorProduto ?? acessorio.valorProduto;
+        acessorio.observacoes = observacoes ?? acessorio.observacoes;
         
         // Manter campos antigos para compatibilidade
         acessorio.nome = nome ?? acessorio.nome;
