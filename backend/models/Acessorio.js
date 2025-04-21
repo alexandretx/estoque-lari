@@ -18,7 +18,6 @@ const AcessorioSchema = new mongoose.Schema({
     },
     valorProduto: {
         type: Number,
-        required: [true, 'Por favor, informe o valor do acessório'],
         min: [0, 'O valor não pode ser negativo'],
     },
     observacoes: {
