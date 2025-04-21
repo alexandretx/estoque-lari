@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -83,6 +83,7 @@ const CelularesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCelulares();
@@ -102,6 +103,17 @@ const CelularesPage = () => {
     }
   };
 
+  const filteredCelulares = useMemo(() => {
+    if (!searchTerm) {
+      return celulares;
+    }
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return celulares.filter(celular => 
+      (celular.marca && celular.marca.toLowerCase().includes(lowerCaseSearchTerm)) ||
+      (celular.modelo && celular.modelo.toLowerCase().includes(lowerCaseSearchTerm))
+    );
+  }, [celulares, searchTerm]);
+
   const confirmDelete = (id) => {
     setDeleteModal({ show: true, id });
   };
@@ -111,14 +123,16 @@ const CelularesPage = () => {
   };
 
   const handleDelete = async () => {
+    const idToDelete = deleteModal.id;
     try {
-      await axios.delete(`${API_CELULARES_URL}/${deleteModal.id}`);
-      setCelulares(celulares.filter(c => c._id !== deleteModal.id));
+      await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
+      setCelulares(prevCelulares => prevCelulares.filter(c => c._id !== idToDelete));
       toast.success('Celular excluído com sucesso!');
-      setDeleteModal({ show: false, id: null });
     } catch (err) {
       console.error("Erro ao excluir celular:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
+    } finally {
+       setDeleteModal({ show: false, id: null });
     }
   };
 
@@ -128,7 +142,7 @@ const CelularesPage = () => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">Gerenciar Celulares</h2>
         <Link
           to="/celulares/novo"
@@ -138,8 +152,17 @@ const CelularesPage = () => {
           Adicionar Celular
         </Link>
       </div>
+      
+      <div className="mb-4">
+        <input 
+          type="text"
+          placeholder="Buscar por marca ou modelo..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
+      </div>
 
-      {/* Visualização para celular (cards) */}
       <div className="md:hidden">
         {loading ? (
           <div className="space-y-4">
@@ -163,13 +186,13 @@ const CelularesPage = () => {
               </div>
             ))}
           </div>
-        ) : celulares.length === 0 ? (
+        ) : filteredCelulares.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-500">Nenhum celular cadastrado.</p>
+             <p className="text-gray-500">{searchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {celulares.map((celular) => (
+            {filteredCelulares.map((celular) => (
               <CelularCard 
                 key={celular._id}
                 celular={celular}
@@ -181,7 +204,6 @@ const CelularesPage = () => {
         )}
       </div>
 
-      {/* Visualização para desktop (tabela) */}
       <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
@@ -196,14 +218,14 @@ const CelularesPage = () => {
           <tbody className="divide-y divide-gray-200">
             {loading ? (
               <TableSkeleton rows={5} cols={5} />
-            ) : celulares.length === 0 ? (
+            ) : filteredCelulares.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
-                  Nenhum celular cadastrado.
+                  {searchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
                 </td>
               </tr>
             ) : (
-              celulares.map((celular) => (
+              filteredCelulares.map((celular) => (
                 <tr key={celular._id} className="hover:bg-gray-50">
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 font-medium">{celular.marca}</p>
@@ -217,7 +239,7 @@ const CelularesPage = () => {
                   </td>
                   <td className="px-5 py-4 bg-white text-sm text-right">
                     <p className="text-gray-900 whitespace-no-wrap">
-                      {celular.valorCompra?.toFixed(2).replace('.', ',') || celular.valor?.toFixed(2).replace('.', ',') || '0,00'}
+                      {celular.valorCompra ? celular.valorCompra.toFixed(2).replace('.', ',') : '0,00'}
                     </p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
