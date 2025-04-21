@@ -69,12 +69,12 @@ const CelularCard = ({ celular, onEdit, onDelete }) => (
       <span className="text-gray-500">Cor:</span>
       <span className="text-gray-900">{celular.cor}</span>
     </div>
-    <div className="flex justify-between text-sm">
-      <span className="text-gray-500">Valor:</span>
-      <span className="text-gray-900 font-medium">
-        R$ {celular.valorCompra?.toFixed(2).replace('.', ',') || celular.valor?.toFixed(2).replace('.', ',') || '0,00'}
-      </span>
-    </div>
+    {celular.observacoes && (
+      <div className="mt-2 pt-2 border-t border-gray-100">
+        <p className="text-xs text-gray-500">Observações:</p>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{celular.observacoes}</p>
+      </div>
+    )}
   </div>
 );
 
@@ -110,7 +110,8 @@ const CelularesPage = () => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     return celulares.filter(celular => 
       (celular.marca && celular.marca.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (celular.modelo && celular.modelo.toLowerCase().includes(lowerCaseSearchTerm))
+      (celular.modelo && celular.modelo.toLowerCase().includes(lowerCaseSearchTerm)) ||
+      (celular.observacoes && celular.observacoes.toLowerCase().includes(lowerCaseSearchTerm))
     );
   }, [celulares, searchTerm]);
 
@@ -211,7 +212,7 @@ const CelularesPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Marca/Modelo</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">IMEI</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cor</th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Valor (R$)</th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
@@ -237,10 +238,8 @@ const CelularesPage = () => {
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{celular.cor}</p>
                   </td>
-                  <td className="px-5 py-4 bg-white text-sm text-right">
-                    <p className="text-gray-900 whitespace-no-wrap">
-                      {celular.valorCompra ? celular.valorCompra.toFixed(2).replace('.', ',') : '0,00'}
-                    </p>
+                  <td className="px-5 py-4 bg-white text-sm">
+                    <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={celular.observacoes}>{celular.observacoes || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
                     <Link

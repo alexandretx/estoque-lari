@@ -68,7 +68,8 @@ const AcessoriosPage = () => {
     return acessorios.filter(acessorio => 
       (acessorio.marca && acessorio.marca.toLowerCase().includes(lowerCaseSearchTerm)) ||
       (acessorio.modelo && acessorio.modelo.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (acessorio.tipo && acessorio.tipo.toLowerCase().includes(lowerCaseSearchTerm))
+      (acessorio.tipo && acessorio.tipo.toLowerCase().includes(lowerCaseSearchTerm)) ||
+      (acessorio.observacoes && acessorio.observacoes.toLowerCase().includes(lowerCaseSearchTerm))
     );
   }, [acessorios, searchTerm]);
   
@@ -111,14 +112,14 @@ const AcessoriosPage = () => {
       <div className="mb-4">
         <input 
           type="text"
-          placeholder="Buscar por marca, modelo ou tipo..."
+          placeholder="Buscar por marca, modelo, tipo ou observação..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
       </div>
 
-      {/* Tabela de Acessórios (Adaptada para mobile e desktop) */}
+      {/* Tabela de Acessórios */}
       <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
@@ -126,15 +127,16 @@ const AcessoriosPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Marca</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipo</th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={5} cols={4} /> // Ajustar cols
+              <TableSkeleton rows={5} cols={5} /> // Ajustar cols para 5
             ) : filteredAcessorios.length === 0 ? (
               <tr>
-                <td colSpan="4" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                   {searchTerm ? 'Nenhum acessório encontrado.' : 'Nenhum acessório cadastrado.'}
                 </td>
               </tr>
@@ -144,6 +146,9 @@ const AcessoriosPage = () => {
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.marca}</p></td>
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.modelo}</p></td>
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.tipo}</p></td>
+                  <td className="px-5 py-4 bg-white text-sm">
+                    <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={acessorio.observacoes}>{acessorio.observacoes || '-'}</p>
+                  </td>
                   <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
                     <Link
                       to={`/acessorios/editar/${acessorio._id}`}

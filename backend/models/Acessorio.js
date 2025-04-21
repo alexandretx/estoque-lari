@@ -21,6 +21,10 @@ const AcessorioSchema = new mongoose.Schema({
         required: [true, 'Por favor, informe o valor do acessório'],
         min: [0, 'O valor não pode ser negativo'],
     },
+    observacoes: {
+        type: String,
+        trim: true,
+    },
     // Mantemos os campos antigos como opcionais para compatibilidade
     nome: {
         type: String,
