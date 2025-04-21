@@ -31,7 +31,6 @@ const CelularSchema = new mongoose.Schema({
     },
     valorCompra: {
         type: Number,
-        required: [true, 'Por favor, informe o valor de compra do celular'],
         min: [0, 'O valor não pode ser negativo'],
     },
     dataCompra: {
