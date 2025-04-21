@@ -24,6 +24,9 @@ const AcessorioSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
+    dataCompra: {
+        type: Date,
+    },
     // Mantemos os campos antigos como opcionais para compatibilidade
     nome: {
         type: String,

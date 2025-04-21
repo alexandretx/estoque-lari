@@ -43,11 +43,10 @@ exports.getAcessorioById = async (req, res) => {
 // @route   POST /api/acessorios
 // @access  Private
 exports.createAcessorio = async (req, res) => {
-    // Extrair tanto os campos novos quanto os antigos para compatibilidade
-    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor } = req.body;
+    // Extrair campos, incluindo dataCompra e observacoes
+    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor, observacoes, dataCompra } = req.body;
 
-    // Log dos dados recebidos para debug
-    console.log('Dados recebidos:', req.body);
+    console.log('Dados recebidos para criar acessório:', req.body);
 
     try {
         const acessorio = await Acessorio.create({
@@ -55,7 +54,9 @@ exports.createAcessorio = async (req, res) => {
             modelo,
             tipo,
             valorProduto,
-            nome,
+            observacoes, // Incluir observacoes
+            dataCompra, // Incluir dataCompra
+            nome, // Campos antigos
             cor,
             quantidade,
             valor,
@@ -86,8 +87,10 @@ exports.createAcessorio = async (req, res) => {
 // @route   PUT /api/acessorios/:id
 // @access  Private
 exports.updateAcessorio = async (req, res) => {
-    // Extrair campos, incluindo observacoes
-    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor, observacoes } = req.body;
+    // Extrair campos, incluindo observacoes e dataCompra
+    const { marca, modelo, tipo, valorProduto, nome, cor, quantidade, valor, observacoes, dataCompra } = req.body;
+
+    console.log('Dados recebidos para atualizar acessório:', req.params.id, req.body);
 
     try {
         let acessorio = await Acessorio.findById(req.params.id);
@@ -100,12 +103,13 @@ exports.updateAcessorio = async (req, res) => {
         //     return res.status(401).json({ message: 'Não autorizado' });
         // }
 
-        // Atualizar campos novos
+        // Atualizar campos
         acessorio.marca = marca ?? acessorio.marca;
         acessorio.modelo = modelo ?? acessorio.modelo;
         acessorio.tipo = tipo ?? acessorio.tipo;
         acessorio.valorProduto = valorProduto ?? acessorio.valorProduto;
         acessorio.observacoes = observacoes ?? acessorio.observacoes;
+        acessorio.dataCompra = dataCompra ?? acessorio.dataCompra; // Incluir dataCompra
         
         // Manter campos antigos para compatibilidade
         acessorio.nome = nome ?? acessorio.nome;

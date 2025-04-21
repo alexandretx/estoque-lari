@@ -6,6 +6,7 @@ import { DashboardSkeleton } from '../components/SkeletonLoader';
 
 const API_STATS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/stats`;
 const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activities`;
+const API_CHECK_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/check-old-items`;
 
 // Componente de Card reutilizável com ícone e animação
 const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
@@ -142,20 +143,27 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const [showOldItemsWarning, setShowOldItemsWarning] = useState(false);
 
   useEffect(() => {
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(API_STATS_URL);
-      setStats(response.data);
+      const [statsResponse, oldItemsResponse] = await Promise.all([
+        axios.get(API_STATS_URL),
+        axios.get(API_CHECK_OLD_ITEMS_URL)
+      ]);
+      
+      setStats(statsResponse.data);
+      setShowOldItemsWarning(oldItemsResponse.data.hasOldItems);
+
     } catch (err) {
-      console.error("Erro ao buscar estatísticas:", err.response?.data?.message || err.message);
-      setError(err.response?.data?.message || 'Erro ao carregar estatísticas.');
+      console.error("Erro ao buscar dados do dashboard:", err.response?.data?.message || err.message);
+      setError(err.response?.data?.message || 'Erro ao carregar dados do dashboard.');
     } finally {
       setLoading(false);
     }
@@ -177,7 +185,7 @@ const DashboardPage = () => {
           )}
         </div>
         <button 
-          onClick={fetchStats} 
+          onClick={fetchDashboardData}
           className="mt-3 sm:mt-0 px-3 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center sm:justify-start text-xs sm:text-sm w-full sm:w-auto"
         >
           <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -187,32 +195,45 @@ const DashboardPage = () => {
         </button>
       </div>
 
-      {loading && (
-        <div className="animate-pulse grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          {[...Array(2)].map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="h-3 sm:h-4 bg-gray-200 rounded w-20 mb-1 sm:mb-2"></div>
-                  <div className="h-5 sm:h-6 bg-gray-200 rounded w-16 mb-1"></div>
-                  <div className="h-2 sm:h-3 bg-gray-200 rounded w-12"></div>
-                </div>
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full"></div>
-              </div>
-            </div>
-          ))}
+      {showOldItemsWarning && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 sm:p-4 rounded-md relative mb-4 sm:mb-6 shadow-md" role="alert">
+          <p className="font-bold text-xs sm:text-sm">Atenção!</p>
+          <p className="text-xs">Existem itens no estoque com data de compra superior a 180 dias.</p>
         </div>
       )}
 
-      {error && (
+      {loading && (
+        <div className="animate-pulse">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            {[...Array(2)].map((_, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-20 mb-1 sm:mb-2"></div>
+                    <div className="h-5 sm:h-6 bg-gray-200 rounded w-16 mb-1"></div>
+                    <div className="h-2 sm:h-3 bg-gray-200 rounded w-12"></div>
+                  </div>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 col-span-1 md:col-span-2 lg:col-span-3 h-40"></div>
+            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 h-40"></div>
+          </div>
+        </div>
+      )}
+
+      {error && !loading && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 sm:p-4 rounded-md relative mb-4 sm:mb-6 shadow-md" role="alert">
           <p className="font-bold text-xs sm:text-sm">Erro ao carregar dados</p>
           <p className="text-xs">{error}</p>
-          <button onClick={fetchStats} className="mt-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">Tentar Novamente</button>
+          <button onClick={fetchDashboardData} className="mt-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">Tentar Novamente</button>
         </div>
       )}
 
-      {!loading && stats && (
+      {!loading && stats && !error && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
             <StatCard
@@ -235,8 +256,10 @@ const DashboardPage = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
-            <SimpleBarChart data={chartData} title="Visão Geral do Estoque" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            <div className="lg:col-span-2">
+              <SimpleBarChart data={chartData} title="Visão Geral do Estoque" />
+            </div>
             <RecentActivities />
           </div>
         </>
@@ -250,7 +273,7 @@ const DashboardPage = () => {
           <h3 className="mt-2 text-xs font-medium text-gray-900 sm:text-sm">Sem dados disponíveis</h3>
           <p className="mt-1 text-xs text-gray-500">Não foi possível carregar as estatísticas.</p>
           <div className="mt-4 sm:mt-6">
-            <button onClick={fetchStats} className="bg-blue-600 px-3 py-1.5 text-white rounded-md text-xs sm:text-sm hover:bg-blue-700">Tentar Novamente</button>
+            <button onClick={fetchDashboardData} className="bg-blue-600 px-3 py-1.5 text-white rounded-md text-xs sm:text-sm hover:bg-blue-700">Tentar Novamente</button>
           </div>
         </div>
       )}

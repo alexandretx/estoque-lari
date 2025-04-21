@@ -35,4 +35,37 @@ exports.getDashboardStats = async (req, res) => {
         console.error('Erro ao buscar estatísticas do dashboard:', error);
         res.status(500).json({ message: 'Erro interno do servidor ao buscar estatísticas' });
     }
+};
+
+// @desc    Verificar se existem itens com mais de 180 dias
+// @route   GET /api/dashboard/check-old-items
+// @access  Private
+exports.checkOldItems = async (req, res) => {
+    try {
+        const daysAgo = 180;
+        const dateLimit = new Date();
+        dateLimit.setDate(dateLimit.getDate() - daysAgo);
+
+        // Verifica se existe algum celular com dataCompra <= dateLimit
+        const oldCelular = await Celular.findOne({
+            dataCompra: { $lte: dateLimit }
+        });
+
+        // Se já encontrou um celular antigo, não precisa verificar acessórios
+        if (oldCelular) {
+            return res.status(200).json({ hasOldItems: true });
+        }
+
+        // Verifica se existe algum acessório com dataCompra <= dateLimit
+        const oldAcessorio = await Acessorio.findOne({
+            dataCompra: { $lte: dateLimit }
+        });
+        
+        // Retorna true se encontrou um acessório antigo, senão false
+        res.status(200).json({ hasOldItems: !!oldAcessorio });
+
+    } catch (error) {
+        console.error('Erro ao verificar itens antigos:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao verificar itens antigos' });
+    }
 }; 

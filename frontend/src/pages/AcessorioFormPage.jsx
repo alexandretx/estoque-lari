@@ -11,6 +11,7 @@ const AcessorioFormPage = () => {
     modelo: '',
     tipo: '',
     observacoes: '',
+    dataCompra: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +25,8 @@ const AcessorioFormPage = () => {
       setLoading(true);
       axios.get(`${API_ACESSORIOS_URL}/${id}`)
         .then(response => {
-          setAcessorio({ ...response.data });
+          const dataFormatada = response.data.dataCompra ? new Date(response.data.dataCompra).toISOString().split('T')[0] : '';
+          setAcessorio({ ...response.data, dataCompra: dataFormatada });
           setLoading(false);
         })
         .catch(err => {
@@ -48,9 +50,11 @@ const AcessorioFormPage = () => {
     setLoading(true);
     setError(null);
 
-    const acessorioData = { ...acessorio };
+    const acessorioData = { 
+        ...acessorio, 
+        dataCompra: acessorio.dataCompra || null 
+    }; 
 
-     // Validação simples no frontend (opcional, backend deve validar também)
     if (!acessorioData.marca || !acessorioData.modelo || !acessorioData.tipo) {
         setError('Por favor, preencha todos os campos obrigatórios corretamente.');
         setLoading(false);
@@ -66,15 +70,14 @@ const AcessorioFormPage = () => {
         await axios.post(API_ACESSORIOS_URL, acessorioData);
         toast.success('Acessório adicionado com sucesso!');
       }
-      navigate('/acessorios'); // Redireciona para a lista após sucesso
+      navigate('/acessorios');
     } catch (err) {
       console.error("Erro ao salvar acessório:", err.response?.data?.message || err.message);
-      const errorMessage = error || (err.response?.data?.message || 'Erro ao salvar acessório. Verifique os dados.');
+      const errorMessage = err.response?.data?.message || 'Erro ao salvar acessório. Verifique os dados.';
       toast.error(errorMessage);
       setError(errorMessage);
       setLoading(false);
     }
-    // Não definir setLoading(false) aqui em caso de sucesso por causa do navigate
   };
 
   if (loading && isEditing) return <p className="text-center text-gray-600 py-8">Carregando dados do acessório...</p>;
@@ -121,21 +124,34 @@ const AcessorioFormPage = () => {
           </div>
         </div>
 
-        {/* Tipo */}
-        <div className="mb-6">
-          <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">Tipo *</label>
-          <input
-            type="text"
-            id="tipo"
-            name="tipo"
-            value={acessorio.tipo}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-            placeholder="Ex: Carregador, Fone, Capa"
-          />
+        {/* Linha 2: Tipo e Data Compra */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">Tipo *</label>
+                <input
+                type="text"
+                id="tipo"
+                name="tipo"
+                value={acessorio.tipo}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+                placeholder="Ex: Carregador, Fone, Capa"
+                />
+            </div>
+            <div>
+                <label htmlFor="dataCompra" className="block text-gray-700 text-sm font-bold mb-2">Data Compra</label>
+                <input
+                    type="date"
+                    id="dataCompra"
+                    name="dataCompra"
+                    value={acessorio.dataCompra}
+                    onChange={handleChange}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+            </div>
         </div>
-
+        
         {/* Observações */}
         <div className="mb-6">
           <label htmlFor="observacoes" className="block text-gray-700 text-sm font-bold mb-2">Observações</label>
