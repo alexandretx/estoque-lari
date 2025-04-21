@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon, SortAscIcon, SortDescIcon } from './../components/Icons'; // Adicionar ícones
+import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons'; // Adicionar ícones
 import { TableSkeleton } from '../components/SkeletonLoader'; // Importar Skeleton
 import Pagination from '../components/Pagination'; // Importar Paginação
 
@@ -150,13 +150,15 @@ const AcessoriosPage = () => {
       navigate(`/acessorios/editar/${id}`);
   };
 
-  // Função auxiliar para renderizar ícone de ordenação
-  const renderSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey) return null;
-    if (sortConfig.direction === 'asc') {
-      return <SortAscIcon className="w-4 h-4 ml-1 inline-block" />;
+  // Função auxiliar para renderizar indicador de ordenação (texto)
+  const renderSortIndicator = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+        return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
     }
-    return <SortDescIcon className="w-4 h-4 ml-1 inline-block" />;
+    if (sortConfig.direction === 'asc') {
+      return <span className="ml-1">▲</span>; // Seta para cima
+    }
+    return <span className="ml-1">▼</span>; // Seta para baixo
   };
 
   return (
@@ -188,14 +190,14 @@ const AcessoriosPage = () => {
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('marca')}>
-                Marca {renderSortIcon('marca')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
+                Marca {renderSortIndicator('marca')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('modelo')}>
-                Modelo {renderSortIcon('modelo')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('modelo')}>
+                Modelo {renderSortIndicator('modelo')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('tipo')}>
-                Tipo {renderSortIcon('tipo')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('tipo')}>
+                Tipo {renderSortIndicator('tipo')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>

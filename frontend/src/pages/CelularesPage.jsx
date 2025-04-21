@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon, SortAscIcon, SortDescIcon } from './../components/Icons'; // Adicionar ícones de ordenação
+import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons';
 import { TableSkeleton } from '../components/SkeletonLoader';
-import Pagination from '../components/Pagination'; // Importar o componente de paginação
+import Pagination from '../components/Pagination';
 
 const API_CELULARES_URL = `${import.meta.env.VITE_API_URL}/api/celulares`;
 
@@ -92,7 +92,6 @@ const CelularesPage = () => {
   const [limit] = useState(10);
   const navigate = useNavigate();
   const firstRender = useRef(true);
-  // Estado de Ordenação
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   useEffect(() => {
@@ -191,14 +190,14 @@ const CelularesPage = () => {
     navigate(`/celulares/editar/${id}`);
   };
 
-  const renderSortIcon = (columnKey) => {
+  const renderSortIndicator = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return null;
+      return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
     }
     if (sortConfig.direction === 'asc') {
-      return <SortAscIcon className="w-4 h-4 ml-1 inline-block" />;
+      return <span className="ml-1">▲</span>;
     }
-    return <SortDescIcon className="w-4 h-4 ml-1 inline-block" />;
+    return <span className="ml-1">▼</span>;
   };
 
   return (
@@ -259,14 +258,14 @@ const CelularesPage = () => {
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('marca')}>
-                Marca/Modelo {renderSortIcon('marca')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
+                Marca/Modelo {renderSortIndicator('marca')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('imei')}>
-                IMEI {renderSortIcon('imei')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('imei')}>
+                IMEI {renderSortIndicator('imei')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('cor')}>
-                Cor {renderSortIcon('cor')}
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('cor')}>
+                Cor {renderSortIndicator('cor')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
