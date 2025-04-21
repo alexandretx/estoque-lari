@@ -54,21 +54,25 @@ const CelularFormPage = () => {
     setLoading(true);
     setError(null);
 
-    // Garante que campos numéricos sejam enviados como números
+    // Validação frontend simples (Marca e Modelo ainda são obrigatórios)
+    if (!celular.marca || !celular.modelo) {
+        toast.warn('Por favor, preencha os campos obrigatórios (Marca e Modelo).');
+        setLoading(false);
+        return;
+    }
+
     const celularData = {
         ...celular,
-        // Garante que campos numéricos sejam enviados como números
         armazenamento: celular.armazenamento ? parseInt(celular.armazenamento, 10) : undefined,
         ram: celular.ram ? parseInt(celular.ram, 10) : undefined,
+        // IMEI pode ser vazio agora
     };
 
-    // Remove campos vazios ou nulos que não são obrigatórios no backend
+    // Remover campos vazios ou nulos que não são obrigatórios no backend
     Object.keys(celularData).forEach(key => {
-        if (celularData[key] === '' || celularData[key] === null || celularData[key] === undefined) {
-            // Mantém campos obrigatórios ou específicos mesmo que vazios para validação no backend se necessário
-            // Por exemplo, se 'imei' fosse opcional, poderíamos deletar:
-            // if (key !== 'marca' && key !== 'modelo' /* etc */) delete celularData[key];
-            // Neste caso, vamos enviar como está para o backend validar
+        // Manter marca e modelo sempre
+        if (key !== 'marca' && key !== 'modelo' && (celularData[key] === '' || celularData[key] === null || celularData[key] === undefined)) {
+            delete celularData[key]; // Remover outros campos vazios/nulos
         }
     });
 
@@ -85,8 +89,6 @@ const CelularFormPage = () => {
       console.error("Erro ao salvar celular:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao salvar celular. Verifique os dados.');
       setLoading(false);
-    } finally {
-      // Não seta loading false aqui porque o navigate acontece em caso de sucesso
     }
   };
 
@@ -126,7 +128,7 @@ const CelularFormPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="imei" className="block text-gray-700 text-sm font-bold mb-2">IMEI *</label>
+            <label htmlFor="imei" className="block text-gray-700 text-sm font-bold mb-2">IMEI</label>
             <input
               type="text"
               id="imei"
@@ -134,7 +136,6 @@ const CelularFormPage = () => {
               value={celular.imei}
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              required
             />
           </div>
         </div>
