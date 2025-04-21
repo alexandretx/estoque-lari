@@ -1,13 +1,49 @@
 const Acessorio = require('../models/Acessorio');
 const { registerActivity } = require('./activityController');
 
-// @desc    Listar todos os acessórios
+// @desc    Listar todos os acessórios com paginação, busca e ordenação
 // @route   GET /api/acessorios
 // @access  Private
 exports.getAcessorios = async (req, res) => {
     try {
-        const acessorios = await Acessorio.find(); // .find({ user: req.user.id })
-        res.status(200).json(acessorios);
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+        const searchTerm = req.query.search || '';
+        const sortBy = req.query.sortBy || 'createdAt';
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+        // Filtro de busca
+        let queryFilter = {};
+        if (searchTerm) {
+            const regex = new RegExp(searchTerm, 'i');
+            queryFilter = {
+                $or: [
+                    { marca: regex },
+                    { modelo: regex },
+                    { tipo: regex }, 
+                    { observacoes: regex }
+                ]
+            };
+        }
+
+        // Opções de ordenação
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder;
+
+        const totalAcessorios = await Acessorio.countDocuments(queryFilter); 
+
+        const acessorios = await Acessorio.find(queryFilter)
+            .sort(sortOptions) // Aplicar ordenação
+            .skip(skip)
+            .limit(limit);
+            
+        res.status(200).json({
+            acessorios,
+            currentPage: page,
+            totalPages: Math.ceil(totalAcessorios / limit),
+            totalAcessorios
+        });
     } catch (error) {
         console.error('Erro ao buscar acessórios:', error);
         res.status(500).json({ message: 'Erro interno do servidor' });

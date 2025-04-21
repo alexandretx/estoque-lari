@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons'; // Supondo que criaremos Icones
+import { PlusIcon, PencilIcon, TrashIcon, SortAscIcon, SortDescIcon } from './../components/Icons'; // Adicionar ícones de ordenação
 import { TableSkeleton } from '../components/SkeletonLoader';
+import Pagination from '../components/Pagination'; // Importar o componente de paginação
 
 const API_CELULARES_URL = `${import.meta.env.VITE_API_URL}/api/celulares`;
 
@@ -63,11 +64,11 @@ const CelularCard = ({ celular, onEdit, onDelete }) => (
     </div>
     <div className="flex justify-between text-sm border-b pb-2 mb-2">
       <span className="text-gray-500">IMEI:</span>
-      <span className="text-gray-900">{celular.imei}</span>
+      <span className="text-gray-900">{celular.imei || '-'}</span>
     </div>
     <div className="flex justify-between text-sm border-b pb-2 mb-2">
       <span className="text-gray-500">Cor:</span>
-      <span className="text-gray-900">{celular.cor}</span>
+      <span className="text-gray-900">{celular.cor || '-'}</span>
     </div>
     {celular.observacoes && (
       <div className="mt-2 pt-2 border-t border-gray-100">
@@ -84,36 +85,81 @@ const CelularesPage = () => {
   const [error, setError] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCelulares, setTotalCelulares] = useState(0);
+  const [limit] = useState(10);
+  const navigate = useNavigate();
+  const firstRender = useRef(true);
+  // Estado de Ordenação
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   useEffect(() => {
-    fetchCelulares();
-  }, []);
+    const handler = setTimeout(() => {
+      if (!firstRender.current || searchTerm !== debouncedSearchTerm) {
+        if(currentPage !== 1) setCurrentPage(1);
+        setDebouncedSearchTerm(searchTerm);
+      }
+      if(firstRender.current) firstRender.current = false;
+    }, 300);
 
-  const fetchCelulares = async () => {
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm, currentPage]);
+
+  const fetchCelulares = useCallback(async (pageToFetch = 1, currentSearchTerm = '', currentSortConfig = { key: 'createdAt', direction: 'desc' }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(API_CELULARES_URL);
-      setCelulares(response.data);
+      const params = { 
+        page: pageToFetch,
+        limit: limit,
+        sortBy: currentSortConfig.key,
+        sortOrder: currentSortConfig.direction
+      };
+      if (currentSearchTerm) {
+        params.search = currentSearchTerm;
+      }
+      
+      const response = await axios.get(API_CELULARES_URL, { params });
+
+      setCelulares(response.data.celulares);
+      setCurrentPage(response.data.currentPage);
+      setTotalPages(response.data.totalPages);
+      setTotalCelulares(response.data.totalCelulares);
     } catch (err) {
       console.error("Erro ao buscar celulares:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao carregar celulares.');
+      setCelulares([]);
+      setTotalPages(0);
+      setTotalCelulares(0);
     } finally {
       setLoading(false);
     }
+  }, [limit]);
+
+  useEffect(() => {
+    if (!firstRender.current || debouncedSearchTerm || sortConfig.key !== 'createdAt') {
+      fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
+    }
+  }, [currentPage, debouncedSearchTerm, sortConfig, fetchCelulares]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      setCurrentPage(newPage);
+    }
   };
 
-  const filteredCelulares = useMemo(() => {
-    if (!searchTerm) {
-      return celulares;
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    return celulares.filter(celular => 
-      (celular.marca && celular.marca.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (celular.modelo && celular.modelo.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (celular.observacoes && celular.observacoes.toLowerCase().includes(lowerCaseSearchTerm))
-    );
-  }, [celulares, searchTerm]);
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
 
   const confirmDelete = (id) => {
     setDeleteModal({ show: true, id });
@@ -127,8 +173,12 @@ const CelularesPage = () => {
     const idToDelete = deleteModal.id;
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
-      setCelulares(prevCelulares => prevCelulares.filter(c => c._id !== idToDelete));
       toast.success('Celular excluído com sucesso!');
+      if (celulares.length === 1 && currentPage > 1) {
+        fetchCelulares(currentPage - 1, debouncedSearchTerm, sortConfig);
+      } else {
+        fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
+      }
     } catch (err) {
       console.error("Erro ao excluir celular:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
@@ -138,7 +188,17 @@ const CelularesPage = () => {
   };
 
   const navigateToEdit = (id) => {
-    window.location.href = `/celulares/editar/${id}`;
+    navigate(`/celulares/editar/${id}`);
+  };
+
+  const renderSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return null;
+    }
+    if (sortConfig.direction === 'asc') {
+      return <SortAscIcon className="w-4 h-4 ml-1 inline-block" />;
+    }
+    return <SortDescIcon className="w-4 h-4 ml-1 inline-block" />;
   };
 
   return (
@@ -157,43 +217,24 @@ const CelularesPage = () => {
       <div className="mb-4">
         <input 
           type="text"
-          placeholder="Buscar por marca ou modelo..."
+          placeholder="Buscar por marca, modelo, IMEI ou observação..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
       </div>
 
+      {/* Visualização mobile */}
       <div className="md:hidden">
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, index) => (
-              <div key={index} className="animate-pulse bg-white rounded-lg shadow-md p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16"></div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-                    <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredCelulares.length === 0 ? (
+        {loading && <p>Carregando...</p>} 
+        {!loading && celulares.length === 0 && (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-             <p className="text-gray-500">{searchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}</p>
+             <p className="text-gray-500">{debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}</p>
           </div>
-        ) : (
+        )}
+        {!loading && celulares.length > 0 && (
           <div className="space-y-4">
-            {filteredCelulares.map((celular) => (
+            {celulares.map((celular) => (
               <CelularCard 
                 key={celular._id}
                 celular={celular}
@@ -203,52 +244,67 @@ const CelularesPage = () => {
             ))}
           </div>
         )}
+        {/* Paginação Mobile */} 
+         {!loading && totalPages > 1 && (
+            <Pagination 
+                currentPage={currentPage} 
+                totalPages={totalPages} 
+                onPageChange={handlePageChange} 
+            />
+         )}
       </div>
 
+      {/* Visualização desktop */}
       <div className="hidden md:block bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Marca/Modelo</th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">IMEI</th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cor</th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('marca')}>
+                Marca/Modelo {renderSortIcon('marca')}
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('imei')}>
+                IMEI {renderSortIcon('imei')}
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('cor')}>
+                Cor {renderSortIcon('cor')}
+              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={5} cols={5} />
-            ) : filteredCelulares.length === 0 ? (
+              <TableSkeleton rows={limit} cols={5} />
+            ) : celulares.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
-                  {searchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
+                   {debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
                 </td>
               </tr>
             ) : (
-              filteredCelulares.map((celular) => (
+              celulares.map((celular) => (
                 <tr key={celular._id} className="hover:bg-gray-50">
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 font-medium">{celular.marca}</p>
                     <p className="text-gray-600 text-xs">{celular.modelo}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{celular.imei}</p>
+                    <p className="text-gray-900 whitespace-no-wrap">{celular.imei || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{celular.cor}</p>
+                    <p className="text-gray-900 whitespace-no-wrap">{celular.cor || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={celular.observacoes}>{celular.observacoes || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
-                    <Link
-                      to={`/celulares/editar/${celular._id}`}
+                    <button
+                      onClick={() => navigateToEdit(celular._id)}
                       className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
                       title="Editar"
                     >
                       <PencilIcon className="w-5 h-5"/>
-                    </Link>
+                    </button>
                     <button
                       onClick={() => confirmDelete(celular._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
@@ -262,6 +318,14 @@ const CelularesPage = () => {
             )}
           </tbody>
         </table>
+        {/* Paginação Desktop */} 
+        {!loading && totalPages > 1 && (
+            <Pagination 
+                currentPage={currentPage} 
+                totalPages={totalPages} 
+                onPageChange={handlePageChange} 
+            />
+        )}
       </div>
 
       <DeleteModal 

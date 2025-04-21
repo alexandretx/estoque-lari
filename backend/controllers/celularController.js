@@ -1,13 +1,49 @@
 const Celular = require('../models/Celular');
 const { registerActivity } = require('./activityController');
 
-// @desc    Listar todos os celulares
+// @desc    Listar todos os celulares com paginação, busca e ordenação
 // @route   GET /api/celulares
 // @access  Private
 exports.getCelulares = async (req, res) => {
     try {
-        const celulares = await Celular.find(); // Poderia filtrar por usuário: .find({ user: req.user.id })
-        res.status(200).json(celulares);
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+        const searchTerm = req.query.search || '';
+        const sortBy = req.query.sortBy || 'createdAt'; // Campo padrão para ordenar
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1; // Ordem: 1 para asc, -1 para desc
+
+        // Filtro de busca
+        let queryFilter = {};
+        if (searchTerm) {
+            const regex = new RegExp(searchTerm, 'i');
+            queryFilter = {
+                $or: [
+                    { marca: regex },
+                    { modelo: regex },
+                    { imei: regex }, 
+                    { observacoes: regex }
+                ]
+            };
+        }
+
+        // Opções de ordenação
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder;
+
+        const totalCelulares = await Celular.countDocuments(queryFilter); 
+
+        const celulares = await Celular.find(queryFilter)
+            .sort(sortOptions) // Aplicar ordenação dinâmica
+            .skip(skip)
+            .limit(limit);
+            
+        res.status(200).json({
+            celulares,
+            currentPage: page,
+            totalPages: Math.ceil(totalCelulares / limit),
+            totalCelulares
+        });
     } catch (error) {
         console.error('Erro ao buscar celulares:', error);
         res.status(500).json({ message: 'Erro interno do servidor' });

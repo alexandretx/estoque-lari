@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons'; // Assumindo que os ícones existem
+import { PlusIcon, PencilIcon, TrashIcon, SortAscIcon, SortDescIcon } from './../components/Icons'; // Adicionar ícones
 import { TableSkeleton } from '../components/SkeletonLoader'; // Importar Skeleton
+import Pagination from '../components/Pagination'; // Importar Paginação
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
 
@@ -39,40 +40,86 @@ const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
 const AcessoriosPage = () => {
   const [acessorios, setAcessorios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(''); // Estado para a busca
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  // Estados de Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalAcessorios, setTotalAcessorios] = useState(0);
+  const [limit] = useState(10);
+  const navigate = useNavigate();
+  const firstRender = useRef(true); 
+  // Estado de Ordenação
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
+  // Debounce para searchTerm
   useEffect(() => {
-    fetchAcessorios();
-  }, []);
+    const handler = setTimeout(() => {
+      if (!firstRender.current || searchTerm !== debouncedSearchTerm) {
+          if(currentPage !== 1) setCurrentPage(1);
+          setDebouncedSearchTerm(searchTerm);
+      }
+      if(firstRender.current) firstRender.current = false;
+    }, 300);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm, currentPage]); 
 
-  const fetchAcessorios = async () => {
+  // Função de busca com ordenação
+  const fetchAcessorios = useCallback(async (pageToFetch = 1, currentSearchTerm = '', currentSortConfig = { key: 'createdAt', direction: 'desc' }) => {
     setLoading(true);
     try {
-      const response = await axios.get(API_ACESSORIOS_URL);
-      setAcessorios(response.data);
+      const params = { 
+          page: pageToFetch,
+          limit: limit,
+          sortBy: currentSortConfig.key,
+          sortOrder: currentSortConfig.direction
+      };
+      if (currentSearchTerm) {
+          params.search = currentSearchTerm;
+      }
+      const response = await axios.get(API_ACESSORIOS_URL, { params });
+      setAcessorios(response.data.acessorios);
+      setCurrentPage(response.data.currentPage);
+      setTotalPages(response.data.totalPages);
+      setTotalAcessorios(response.data.totalAcessorios);
     } catch (err) {
       console.error("Erro ao buscar acessórios:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao carregar acessórios.');
+      setAcessorios([]);
+      setTotalPages(0);
+      setTotalAcessorios(0);
     } finally {
       setLoading(false);
     }
+  }, [limit]);
+
+  // Buscar ao montar e quando a página, busca (debounced) ou ordenação mudar
+  useEffect(() => {
+       if (!firstRender.current || debouncedSearchTerm || sortConfig.key !== 'createdAt') {
+            fetchAcessorios(currentPage, debouncedSearchTerm, sortConfig);
+       }
+  }, [currentPage, debouncedSearchTerm, sortConfig, fetchAcessorios]);
+
+  // Handler para mudança de página
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      setCurrentPage(newPage);
+    }
   };
 
-  // Filtrar acessórios baseado no searchTerm
-  const filteredAcessorios = useMemo(() => {
-    if (!searchTerm) {
-      return acessorios;
+  // Handler para clique no cabeçalho da tabela (ordenação)
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    return acessorios.filter(acessorio => 
-      (acessorio.marca && acessorio.marca.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (acessorio.modelo && acessorio.modelo.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (acessorio.tipo && acessorio.tipo.toLowerCase().includes(lowerCaseSearchTerm)) ||
-      (acessorio.observacoes && acessorio.observacoes.toLowerCase().includes(lowerCaseSearchTerm))
-    );
-  }, [acessorios, searchTerm]);
-  
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
   const confirmDelete = (id) => {
     setDeleteModal({ show: true, id });
   };
@@ -85,14 +132,31 @@ const AcessoriosPage = () => {
     const idToDelete = deleteModal.id;
     try {
       await axios.delete(`${API_ACESSORIOS_URL}/${idToDelete}`);
-      setAcessorios(prevAcessorios => prevAcessorios.filter(a => a._id !== idToDelete));
       toast.success('Acessório excluído com sucesso!');
+      if (acessorios.length === 1 && currentPage > 1) {
+        fetchAcessorios(currentPage - 1, debouncedSearchTerm, sortConfig);
+      } else {
+        fetchAcessorios(currentPage, debouncedSearchTerm, sortConfig);
+      }
     } catch (err) {
       console.error("Erro ao excluir acessório:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir acessório.');
     } finally {
       setDeleteModal({ show: false, id: null });
     }
+  };
+
+  const navigateToEdit = (id) => {
+      navigate(`/acessorios/editar/${id}`);
+  };
+
+  // Função auxiliar para renderizar ícone de ordenação
+  const renderSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) return null;
+    if (sortConfig.direction === 'asc') {
+      return <SortAscIcon className="w-4 h-4 ml-1 inline-block" />;
+    }
+    return <SortDescIcon className="w-4 h-4 ml-1 inline-block" />;
   };
 
   return (
@@ -124,24 +188,30 @@ const AcessoriosPage = () => {
         <table className="min-w-full leading-normal">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Marca</th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo</th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipo</th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('marca')}>
+                Marca {renderSortIcon('marca')}
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('modelo')}>
+                Modelo {renderSortIcon('modelo')}
+              </th>
+              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200" onClick={() => handleSort('tipo')}>
+                Tipo {renderSortIcon('tipo')}
+              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={5} cols={5} /> // Ajustar cols para 5
-            ) : filteredAcessorios.length === 0 ? (
+              <TableSkeleton rows={limit} cols={5} />
+            ) : acessorios.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
-                  {searchTerm ? 'Nenhum acessório encontrado.' : 'Nenhum acessório cadastrado.'}
+                  {debouncedSearchTerm ? 'Nenhum acessório encontrado.' : 'Nenhum acessório cadastrado.'}
                 </td>
               </tr>
             ) : (
-              filteredAcessorios.map((acessorio) => (
+              acessorios.map((acessorio) => (
                 <tr key={acessorio._id} className="hover:bg-gray-50">
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.marca}</p></td>
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.modelo}</p></td>
@@ -150,13 +220,13 @@ const AcessoriosPage = () => {
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={acessorio.observacoes}>{acessorio.observacoes || '-'}</p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
-                    <Link
-                      to={`/acessorios/editar/${acessorio._id}`}
+                    <button
+                      onClick={() => navigateToEdit(acessorio._id)}
                       className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
                       title="Editar"
                     >
                       <PencilIcon className="w-5 h-5"/>
-                    </Link>
+                    </button>
                     <button
                       onClick={() => confirmDelete(acessorio._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
@@ -170,6 +240,14 @@ const AcessoriosPage = () => {
             )}
           </tbody>
         </table>
+         {/* Paginação */} 
+         {!loading && totalPages > 1 && (
+            <Pagination 
+                currentPage={currentPage} 
+                totalPages={totalPages} 
+                onPageChange={handlePageChange} 
+            />
+         )}
       </div>
 
       <DeleteModal 
