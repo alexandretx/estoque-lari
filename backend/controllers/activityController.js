@@ -26,11 +26,11 @@ exports.registerActivity = async (action, item, itemId, itemType, user = null) =
 // @access  Private
 exports.getRecentActivities = async (req, res) => {
     try {
-        // Buscar as últimas 10 atividades, ordenadas pela data mais recente
+        // Buscar as últimas 6 atividades, ordenadas pela data mais recente
         const activities = await Activity
             .find()
             .sort({ createdAt: -1 })
-            .limit(10);
+            .limit(6);
             
         // Formatar a resposta para o frontend
         const formattedActivities = activities.map(activity => ({
