@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Spinner } from '../components/Icons';
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
 
@@ -226,16 +225,15 @@ const AcessorioFormPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+            className={`inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {loading && <Spinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />} 
             {loading ? 'Salvando...' : (isEditing ? 'Atualizar Acessório' : 'Adicionar Acessório')}
           </button>
           <button
             type="button"
             onClick={() => navigate('/acessorios')} 
             disabled={loading}
-            className={`bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+            className={`bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Cancelar
           </button>
