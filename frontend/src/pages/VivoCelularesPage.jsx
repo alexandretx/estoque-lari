@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
 import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import ConfirmationModal from './../components/ConfirmationModal';
 import Pagination from '../../components/Pagination';
 import CelularCard from '../../components/CelularCard'; // Reutilizar ou criar VivoCelularCard se necessário
 
