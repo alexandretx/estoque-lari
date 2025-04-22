@@ -10,41 +10,13 @@ import Pagination from '../../components/Pagination';
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
 
-const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmar exclusão</h3>
-        <p className="text-gray-600 mb-6">
-          Tem certeza que deseja excluir este acessório? Esta ação não pode ser desfeita.
-        </p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
-          >
-            Excluir
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const AcessoriosPage = () => {
   const [acessorios, setAcessorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedAcessorioId, setSelectedAcessorioId] = useState(null);
   // Estados de Paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -128,15 +100,18 @@ const AcessoriosPage = () => {
   };
 
   const confirmDelete = (id) => {
-    setDeleteModal({ show: true, id });
+    setSelectedAcessorioId(id);
+    setShowConfirmationModal(true);
   };
 
   const cancelDelete = () => {
-    setDeleteModal({ show: false, id: null });
+    setShowConfirmationModal(false);
+    setSelectedAcessorioId(null);
   };
 
   const handleDelete = async () => {
-    const idToDelete = deleteModal.id;
+    if (!selectedAcessorioId) return;
+    const idToDelete = selectedAcessorioId;
     try {
       await axios.delete(`${API_ACESSORIOS_URL}/${idToDelete}`);
       toast.success('Acessório excluído com sucesso!');
@@ -151,7 +126,8 @@ const AcessoriosPage = () => {
       console.error("Erro ao excluir acessório:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir acessório.');
     } finally {
-      setDeleteModal({ show: false, id: null });
+      setShowConfirmationModal(false);
+      setSelectedAcessorioId(null);
     }
   };
 
@@ -259,10 +235,12 @@ const AcessoriosPage = () => {
          )}
       </div>
 
-      <DeleteModal 
-        isOpen={deleteModal.show}
+      <ConfirmationModal 
+        isOpen={showConfirmationModal}
         onClose={cancelDelete}
         onConfirm={handleDelete}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este acessório? Esta ação não pode ser desfeita."
       />
     </div>
   );
