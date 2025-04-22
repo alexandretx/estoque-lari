@@ -13,52 +13,44 @@ exports.getCelulares = async (req, res) => {
         const sortBy = req.query.sortBy || 'marca';
         const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
 
-        // Filtro de busca - Tratar armazenamento como string para busca
+        // Filtro de busca - Tratar armazenamento e RAM como string para busca
         let queryFilter = {};
         if (searchTerm) {
-            const regex = new RegExp(searchTerm, 'i'); // Case-insensitive para campos String
+            const regex = new RegExp(searchTerm, 'i');
             
-            // Condições para campos String
             const stringFieldConditions = [
                 { marca: regex },
                 { modelo: regex },
                 { imei: regex }, 
                 { observacoes: regex },
-                // Adicionar outros campos String relevantes para busca aqui
-                // Ex: { cor: regex }
+                { cor: regex } 
             ];
 
-            // Condição para campo numérico 'armazenamento' (convertido para string)
-            const numberAsStringCondition = {
-                 $expr: { 
-                    $regexMatch: { 
-                        input: { $toString: "$armazenamento" }, // Converte armazenamento para string
-                        regex: searchTerm, // Passa o termo como string para a regex dentro do $expr
-                        options: "i" // Garante case-insensitivity na comparação regex
-                    }
-                } 
-            };
+            // Condições para campos numéricos convertidos para string
+            const numericAsStringConditions = [
+                 // Armazenamento
+                 { $expr: { $regexMatch: { input: { $toString: "$armazenamento" }, regex: searchTerm, options: "i" } } },
+                 // RAM
+                 { $expr: { $regexMatch: { input: { $toString: "$ram" }, regex: searchTerm, options: "i" } } }
+            ];
             
-            // Combina as condições
             queryFilter = {
                 $or: [
                     ...stringFieldConditions,
-                    numberAsStringCondition
-                    // Adicionar aqui a condição para 'ram' se for número e precisar buscar
-                    // { $expr: { $regexMatch: { input: { $toString: "$ram" }, regex: searchTerm, options: "i" } } }
+                    ...numericAsStringConditions // Incluir busca em RAM e Armazenamento
                 ]
             };
         }
 
         // Opções de ordenação
         const sortOptions = {};
-        // Certifique-se que todos os campos usados em `sortBy` existem no Schema
-        const validSortKeys = ['marca', 'modelo', 'imei', 'armazenamento', 'cor', 'createdAt', 'dataCompra', 'valorCompra', 'ram']; 
+        // Garantir que 'ram' está na lista de chaves válidas
+        const validSortKeys = ['marca', 'modelo', 'imei', 'armazenamento', 'ram', 'cor', 'createdAt', 'dataCompra', 'valorCompra']; 
         if (validSortKeys.includes(sortBy)) {
             sortOptions[sortBy] = sortOrder;
         } else {
             console.warn(`Chave de ordenação inválida: ${sortBy}. Usando fallback para marca.`);
-            sortOptions['marca'] = 1; // Fallback seguro
+            sortOptions['marca'] = 1;
         }
 
         const totalCelulares = await Celular.countDocuments(queryFilter);
@@ -75,11 +67,10 @@ exports.getCelulares = async (req, res) => {
             totalCelulares
         });
     } catch (error) {
-        // Log mais detalhado do erro
         console.error('Erro ao buscar celulares:', error.message);
         if (error.name === 'CastError') {
              console.error(`Detalhes CastError: Path: ${error.path}, Value: ${JSON.stringify(error.value)}, Kind: ${error.kind}`);
-        } else if (error.code === 51049) { // Código de erro comum para problemas de $expr/$toString
+        } else if (error.code === 51049) {
              console.error('Erro potencial com $expr/$toString. Verifique a sintaxe da query e tipos de dados.', error);
         } else {
              console.error('Stack Trace:', error.stack);
