@@ -108,7 +108,6 @@ const CelularesPage = () => {
   }, [searchTerm, debouncedSearchTerm]);
 
   const fetchCelulares = useCallback(async (pageToFetch, currentSearchTerm, currentSortConfig) => {
-    console.log(`[fetchCelulares] Iniciando busca - Página: ${pageToFetch}, Busca: '${currentSearchTerm}', Sort: ${currentSortConfig.key} ${currentSortConfig.direction}`);
     setLoading(true);
     setError(null);
     try {
@@ -121,19 +120,16 @@ const CelularesPage = () => {
       if (currentSearchTerm) {
         params.search = currentSearchTerm;
       }
-      console.log("[fetchCelulares] Parâmetros da API:", params);
       
       const response = await axios.get(API_CELULARES_URL, { params });
-      console.log("[fetchCelulares] Resposta da API recebida:", response.data);
 
       setCelulares(response.data.celulares);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
       setTotalCelulares(response.data.totalCelulares);
-      console.log("[fetchCelulares] Estado atualizado com sucesso.");
 
     } catch (err) {
-      console.error("[fetchCelulares] Erro ao buscar celulares:", err.response?.data || err.message);
+      console.error("Erro ao buscar celulares:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao carregar celulares.');
       setCelulares([]);
       setCurrentPage(1);
@@ -141,37 +137,28 @@ const CelularesPage = () => {
       setTotalCelulares(0);
       setError('Falha ao buscar dados.');
     } finally {
-      console.log("[fetchCelulares] Finalizando busca, setLoading(false).");
       setLoading(false);
     }
   }, [limit]);
 
   useEffect(() => {
-    console.log(`[useEffect] Disparando fetch - Página: ${currentPage}, Busca: '${debouncedSearchTerm}', Sort: ${sortConfig.key}`);
     fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
   }, [currentPage, debouncedSearchTerm, sortConfig, fetchCelulares]);
 
   const handlePageChange = (newPage) => {
-    console.log(`[handlePageChange] Tentando mudar para página: ${newPage}, Total Páginas: ${totalPages}, Página Atual: ${currentPage}`);
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-        console.log(`[handlePageChange] Mudando estado currentPage para: ${newPage}`);
         setCurrentPage(newPage);
-    } else {
-        console.warn(`[handlePageChange] Mudança de página inválida ou desnecessária.`);
     }
   };
 
   const handleSort = (key) => {
-    console.log(`[handleSort] Ordenando por: ${key}`);
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     const newSortConfig = { key, direction };
-    console.log("[handleSort] Nova config de sort:", newSortConfig);
     setSortConfig(newSortConfig);
     if (currentPage !== 1) {
-        console.log("[handleSort] Resetando para página 1.");
         setCurrentPage(1);
     }
   };
@@ -186,23 +173,20 @@ const CelularesPage = () => {
 
   const handleDelete = async () => {
     const idToDelete = deleteModal.id;
-    console.log(`[handleDelete] Tentando excluir ID: ${idToDelete}`);
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
       toast.success('Celular excluído com sucesso!');
       const pageToFetch = (celulares.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
-      console.log(`[handleDelete] Exclusão bem-sucedida. Rebuscando página: ${pageToFetch}`);
       if (pageToFetch !== currentPage) {
           setCurrentPage(pageToFetch);
       } else {
           fetchCelulares(pageToFetch, debouncedSearchTerm, sortConfig); 
       }
     } catch (err) {
-      console.error("[handleDelete] Erro ao excluir celular:", err.response?.data || err.message);
+      console.error("Erro ao excluir celular:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
     } finally {
        setDeleteModal({ show: false, id: null });
-       console.log("[handleDelete] Finalizando exclusão.");
     }
   };
 
