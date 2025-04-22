@@ -61,9 +61,9 @@ const AcessoriosPage = () => {
         if (searchTerm !== debouncedSearchTerm) {
             setCurrentPage(1);
         }
-    }, 300);
+    }, 500);
     return () => clearTimeout(handler);
-  }, [searchTerm]); 
+  }, [searchTerm, debouncedSearchTerm]); 
 
   // Função de busca com ordenação
   const fetchAcessorios = useCallback(async (pageToFetch, currentSearchTerm, currentSortConfig) => {
@@ -88,12 +88,13 @@ const AcessoriosPage = () => {
       console.error("Erro ao buscar acessórios:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao carregar acessórios.');
       setAcessorios([]);
+      setCurrentPage(1);
       setTotalPages(0);
       setTotalAcessorios(0);
     } finally {
       setLoading(false);
     }
-  }, []); // useCallback sem dependências complexas
+  }, [limit]); // useCallback sem dependências complexas
 
   // Buscar ao montar e quando a página, busca (debounced) ou ordenação mudar
   useEffect(() => {
@@ -139,7 +140,11 @@ const AcessoriosPage = () => {
       toast.success('Acessório excluído com sucesso!');
        // Após excluir, buscar novamente na página atual ou anterior se for o último item
        const pageToFetch = (acessorios.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
-      fetchAcessorios(pageToFetch, debouncedSearchTerm, sortConfig);
+       if (pageToFetch !== currentPage) {
+           setCurrentPage(pageToFetch);
+       } else {
+           fetchAcessorios(pageToFetch, debouncedSearchTerm, sortConfig);
+       }
     } catch (err) {
       console.error("Erro ao excluir acessório:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir acessório.');
@@ -201,19 +206,16 @@ const AcessoriosPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('tipo')}>
                 Tipo {renderSortIndicator('tipo')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('createdAt')}>
-                Cadastro {renderSortIndicator('createdAt')}
-              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={limit} cols={6} />
+              <TableSkeleton rows={limit} cols={5} />
             ) : acessorios.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="5" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                   {debouncedSearchTerm ? 'Nenhum acessório encontrado.' : 'Nenhum acessório cadastrado.'}
                 </td>
               </tr>
@@ -223,11 +225,6 @@ const AcessoriosPage = () => {
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.marca || '-'}</p></td>
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.modelo || '-'}</p></td>
                   <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{acessorio.tipo || '-'}</p></td>
-                  <td className="px-5 py-4 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">
-                      {acessorio.createdAt ? new Date(acessorio.createdAt).toLocaleDateString('pt-BR') : '-'} 
-                    </p>
-                  </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={acessorio.observacoes}>{acessorio.observacoes || '-'}</p>
                   </td>
