@@ -276,19 +276,16 @@ const CelularesPage = () => {
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('armazenamento')}>
                 Armaz. {renderSortIndicator('armazenamento')}
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('createdAt')}>
-                Cadastro {renderSortIndicator('createdAt')}
-              </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading ? (
-              <TableSkeleton rows={limit} cols={7} />
+              <TableSkeleton rows={limit} cols={6} />
             ) : celulares.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
+                <td colSpan="6" className="px-5 py-5 bg-white text-sm text-center text-gray-500">
                    {debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}
                 </td>
               </tr>
@@ -307,11 +304,6 @@ const CelularesPage = () => {
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{celular.armazenamento || '-'}</p>
-                  </td>
-                  <td className="px-5 py-4 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">
-                      {celular.createdAt ? new Date(celular.createdAt).toLocaleDateString('pt-BR') : '-'} 
-                    </p>
                   </td>
                   <td className="px-5 py-4 bg-white text-sm">
                     <p className="text-gray-700 whitespace-pre-wrap break-words max-w-xs truncate" title={celular.observacoes}>{celular.observacoes || '-'}</p>
