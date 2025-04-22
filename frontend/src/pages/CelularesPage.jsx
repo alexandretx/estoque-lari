@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons';
-import { TableSkeleton } from '../components/SkeletonLoader';
-import Pagination from '../components/Pagination';
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
+import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import Pagination from '../../components/Pagination';
+import CelularCard from '../../components/CelularCard';
 
 const API_CELULARES_URL = `${import.meta.env.VITE_API_URL}/api/celulares`;
 
@@ -36,52 +38,6 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }) => {
     </div>
   );
 };
-
-// Card para visualização móvel
-const CelularCard = ({ celular, onEdit, onDelete }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-    <div className="flex justify-between items-start mb-3">
-      <div>
-        <h3 className="font-medium text-gray-900">{celular.marca}</h3>
-        <p className="text-sm text-gray-600">{celular.modelo}</p>
-      </div>
-      <div className="flex space-x-2">
-        <button
-          onClick={() => onEdit(celular._id)}
-          className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
-          title="Editar"
-        >
-          <PencilIcon className="w-5 h-5"/>
-        </button>
-        <button
-          onClick={() => onDelete(celular._id)}
-          className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
-          title="Excluir"
-        >
-          <TrashIcon className="w-5 h-5"/>
-        </button>
-      </div>
-    </div>
-    <div className="flex justify-between text-sm border-b pb-2 mb-2">
-      <span className="text-gray-500">IMEI:</span>
-      <span className="text-gray-900">{celular.imei || '-'}</span>
-    </div>
-    <div className="flex justify-between text-sm border-b pb-2 mb-2">
-      <span className="text-gray-500">Cor:</span>
-      <span className="text-gray-900">{celular.cor || '-'}</span>
-    </div>
-    <div className="flex justify-between text-sm border-b pb-2 mb-2">
-      <span className="text-gray-500">Armazenamento:</span>
-      <span className="text-gray-900">{celular.armazenamento || '-'}</span>
-    </div>
-    {celular.observacoes && (
-      <div className="mt-2 pt-2 border-t border-gray-100">
-        <p className="text-xs text-gray-500">Observações:</p>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{celular.observacoes}</p>
-      </div>
-    )}
-  </div>
-);
 
 const CelularesPage = () => {
   const [celulares, setCelulares] = useState([]);
@@ -194,14 +150,11 @@ const CelularesPage = () => {
     navigate(`/celulares/editar/${id}`);
   };
 
-  const renderSortIndicator = (columnKey) => {
+  const renderSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
+      return null;
     }
-    if (sortConfig.direction === 'asc') {
-      return <span className="ml-1">▲</span>;
-    }
-    return <span className="ml-1">▼</span>;
+    return sortConfig.direction === 'asc' ? <SortAscIcon className="w-4 h-4 ml-1" /> : <SortDescIcon className="w-4 h-4 ml-1" />;
   };
 
   return (
@@ -212,7 +165,7 @@ const CelularesPage = () => {
           to="/celulares/novo"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center justify-center transition duration-200 w-full sm:w-auto"
         >
-          <PlusIcon className="w-4 h-4 mr-2" />
+          <FiPlus className="w-4 h-4 mr-2" />
           Adicionar Celular
         </Link>
       </div>
@@ -263,10 +216,10 @@ const CelularesPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
-                Marca/Modelo {renderSortIndicator('marca')}
+                Marca/Modelo {renderSortIcon('marca')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('imei')}>
-                IMEI {renderSortIndicator('imei')}
+                IMEI {renderSortIcon('imei')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('cor')}>
                 Cor {renderSortIndicator('cor')}

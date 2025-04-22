@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons'; // Adicionar ícones
-import { TableSkeleton } from '../components/SkeletonLoader'; // Importar Skeleton
-import Pagination from '../components/Pagination'; // Importar Paginação
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
+// Padronizar para v2
+import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import Pagination from '../../components/Pagination';
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
 
@@ -157,15 +159,13 @@ const AcessoriosPage = () => {
       navigate(`/acessorios/editar/${id}`);
   };
 
-  // Função auxiliar para renderizar indicador de ordenação (texto)
-  const renderSortIndicator = (columnKey) => {
+  // Renderizar ícone de ordenação
+  const renderSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-        return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
+      return null;
     }
-    if (sortConfig.direction === 'asc') {
-      return <span className="ml-1">▲</span>;
-    }
-    return <span className="ml-1">▼</span>;
+    // Usar os ícones importados e renomeados
+    return sortConfig.direction === 'asc' ? <SortAscIcon className="w-4 h-4 ml-1" /> : <SortDescIcon className="w-4 h-4 ml-1" />;
   };
 
   return (
@@ -176,7 +176,7 @@ const AcessoriosPage = () => {
           to="/acessorios/novo"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center justify-center transition duration-200 w-full sm:w-auto"
         >
-          <PlusIcon className="w-4 h-4 mr-2" />
+          <FiPlus className="w-4 h-4 mr-2" />
           Adicionar Acessório
         </Link>
       </div>
@@ -198,13 +198,13 @@ const AcessoriosPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
-                Marca {renderSortIndicator('marca')}
+                Marca {renderSortIcon('marca')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('modelo')}>
-                Modelo {renderSortIndicator('modelo')}
+                Modelo {renderSortIcon('modelo')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('tipo')}>
-                Tipo {renderSortIndicator('tipo')}
+                Tipo {renderSortIcon('tipo')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
@@ -234,14 +234,14 @@ const AcessoriosPage = () => {
                       className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
                       title="Editar"
                     >
-                      <PencilIcon className="w-5 h-5"/>
+                      <FiEdit className="w-5 h-5"/>
                     </button>
                     <button
                       onClick={() => confirmDelete(acessorio._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
                       title="Excluir"
                     >
-                       <TrashIcon className="w-5 h-5"/>
+                       <FiTrash2 className="w-5 h-5"/>
                     </button>
                   </td>
                 </tr>
