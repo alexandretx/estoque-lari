@@ -10,40 +10,12 @@ import CelularCard from '../../components/CelularCard';
 
 const API_CELULARES_URL = `${import.meta.env.VITE_API_URL}/api/celulares`;
 
-const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmar exclusão</h3>
-        <p className="text-gray-600 mb-6">
-          Tem certeza que deseja excluir este celular? Esta ação não pode ser desfeita.
-        </p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
-          >
-            Excluir
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const CelularesPage = () => {
   const [celulares, setCelulares] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedCelularId, setSelectedCelularId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +24,7 @@ const CelularesPage = () => {
   const [limit] = useState(10);
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: 'marca', direction: 'asc' });
+  const [isGridView, setIsGridView] = useState(true);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -119,16 +92,9 @@ const CelularesPage = () => {
     }
   };
 
-  const confirmDelete = (id) => {
-    setDeleteModal({ show: true, id });
-  };
-
-  const cancelDelete = () => {
-    setDeleteModal({ show: false, id: null });
-  };
-
   const handleDelete = async () => {
-    const idToDelete = deleteModal.id;
+    if (!selectedCelularId) return;
+    const idToDelete = selectedCelularId;
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
       toast.success('Celular excluído com sucesso!');
@@ -142,8 +108,19 @@ const CelularesPage = () => {
       console.error("Erro ao excluir celular:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
     } finally {
-       setDeleteModal({ show: false, id: null });
+      setShowConfirmationModal(false);
+      setSelectedCelularId(null);
     }
+  };
+
+  const openModal = (id) => {
+    setSelectedCelularId(id);
+    setShowConfirmationModal(true);
+  };
+
+  const closeModal = () => {
+    setShowConfirmationModal(false);
+    setSelectedCelularId(null);
   };
 
   const navigateToEdit = (id) => {
@@ -195,7 +172,7 @@ const CelularesPage = () => {
                 key={celular._id}
                 celular={celular}
                 onEdit={navigateToEdit}
-                onDelete={confirmDelete}
+                onDelete={openModal}
               />
             ))}
           </div>
@@ -268,7 +245,7 @@ const CelularesPage = () => {
                       <PencilIcon className="w-5 h-5"/>
                     </button>
                     <button
-                      onClick={() => confirmDelete(celular._id)}
+                      onClick={() => openModal(celular._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
                       title="Excluir"
                     >
@@ -290,11 +267,24 @@ const CelularesPage = () => {
         )}
       </div>
 
-      <DeleteModal 
-        isOpen={deleteModal.show}
-        onClose={cancelDelete}
+      {/* Paginação */}
+      {!loading && totalPages > 1 && (
+          <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={handlePageChange} 
+              totalItems={totalCelulares} 
+              itemsPerPage={limit} 
+          />
+       )}
+
+      {/* Usar ConfirmationModal - Corrigir a duplicação */}
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={closeModal}
         onConfirm={handleDelete}
-        itemName="celular"
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja deletar este celular? Esta ação não pode ser desfeita."
       />
     </div>
   );
