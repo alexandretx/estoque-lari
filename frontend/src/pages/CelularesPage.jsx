@@ -95,24 +95,20 @@ const CelularesPage = () => {
   const [totalCelulares, setTotalCelulares] = useState(0);
   const [limit] = useState(10);
   const navigate = useNavigate();
-  const firstRender = useRef(true);
   const [sortConfig, setSortConfig] = useState({ key: 'marca', direction: 'asc' });
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (!firstRender.current || searchTerm !== debouncedSearchTerm) {
-        if(currentPage !== 1) setCurrentPage(1);
-        setDebouncedSearchTerm(searchTerm);
+      setDebouncedSearchTerm(searchTerm);
+      if (searchTerm !== debouncedSearchTerm) { 
+          setCurrentPage(1);
       }
-      if(firstRender.current) firstRender.current = false;
-    }, 300);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchTerm, debouncedSearchTerm]);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm, currentPage]);
-
-  const fetchCelulares = useCallback(async (pageToFetch = 1, currentSearchTerm = '', currentSortConfig = { key: 'createdAt', direction: 'desc' }) => {
+  const fetchCelulares = useCallback(async (pageToFetch, currentSearchTerm, currentSortConfig) => {
+    console.log(`[fetchCelulares] Iniciando busca - Página: ${pageToFetch}, Busca: '${currentSearchTerm}', Sort: ${currentSortConfig.key} ${currentSortConfig.direction}`);
     setLoading(true);
     setError(null);
     try {
@@ -125,46 +121,57 @@ const CelularesPage = () => {
       if (currentSearchTerm) {
         params.search = currentSearchTerm;
       }
+      console.log("[fetchCelulares] Parâmetros da API:", params);
       
       const response = await axios.get(API_CELULARES_URL, { params });
+      console.log("[fetchCelulares] Resposta da API recebida:", response.data);
 
       setCelulares(response.data.celulares);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
       setTotalCelulares(response.data.totalCelulares);
+      console.log("[fetchCelulares] Estado atualizado com sucesso.");
+
     } catch (err) {
-      console.error("Erro ao buscar celulares:", err.response?.data?.message || err.message);
+      console.error("[fetchCelulares] Erro ao buscar celulares:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao carregar celulares.');
       setCelulares([]);
+      setCurrentPage(1);
       setTotalPages(0);
       setTotalCelulares(0);
+      setError('Falha ao buscar dados.');
     } finally {
+      console.log("[fetchCelulares] Finalizando busca, setLoading(false).");
       setLoading(false);
     }
   }, [limit]);
 
   useEffect(() => {
-    if (!firstRender.current || debouncedSearchTerm || sortConfig.key !== 'createdAt') {
-      fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
-    }
+    console.log(`[useEffect] Disparando fetch - Página: ${currentPage}, Busca: '${debouncedSearchTerm}', Sort: ${sortConfig.key}`);
+    fetchCelulares(currentPage, debouncedSearchTerm, sortConfig);
   }, [currentPage, debouncedSearchTerm, sortConfig, fetchCelulares]);
 
   const handlePageChange = (newPage) => {
+    console.log(`[handlePageChange] Tentando mudar para página: ${newPage}, Total Páginas: ${totalPages}, Página Atual: ${currentPage}`);
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-      setCurrentPage(newPage);
+        console.log(`[handlePageChange] Mudando estado currentPage para: ${newPage}`);
+        setCurrentPage(newPage);
+    } else {
+        console.warn(`[handlePageChange] Mudança de página inválida ou desnecessária.`);
     }
   };
 
   const handleSort = (key) => {
+    console.log(`[handleSort] Ordenando por: ${key}`);
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
-    else if (sortConfig.key !== key) {
-        direction = 'asc';
-    }
-    setSortConfig({ key, direction });
+    const newSortConfig = { key, direction };
+    console.log("[handleSort] Nova config de sort:", newSortConfig);
+    setSortConfig(newSortConfig);
     if (currentPage !== 1) {
+        console.log("[handleSort] Resetando para página 1.");
         setCurrentPage(1);
     }
   };
@@ -179,16 +186,23 @@ const CelularesPage = () => {
 
   const handleDelete = async () => {
     const idToDelete = deleteModal.id;
+    console.log(`[handleDelete] Tentando excluir ID: ${idToDelete}`);
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
       toast.success('Celular excluído com sucesso!');
       const pageToFetch = (celulares.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
-      fetchCelulares(pageToFetch, debouncedSearchTerm, sortConfig);
+      console.log(`[handleDelete] Exclusão bem-sucedida. Rebuscando página: ${pageToFetch}`);
+      if (pageToFetch !== currentPage) {
+          setCurrentPage(pageToFetch);
+      } else {
+          fetchCelulares(pageToFetch, debouncedSearchTerm, sortConfig); 
+      }
     } catch (err) {
-      console.error("Erro ao excluir celular:", err.response?.data?.message || err.message);
+      console.error("[handleDelete] Erro ao excluir celular:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
     } finally {
        setDeleteModal({ show: false, id: null });
+       console.log("[handleDelete] Finalizando exclusão.");
     }
   };
 
@@ -231,7 +245,7 @@ const CelularesPage = () => {
 
       {/* Visualização mobile */}
       <div className="md:hidden">
-        {loading && <p>Carregando...</p>} 
+        {loading && <div className="text-center py-4">Carregando...</div>} 
         {!loading && celulares.length === 0 && (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
              <p className="text-gray-500">{debouncedSearchTerm ? 'Nenhum celular encontrado para a busca.' : 'Nenhum celular cadastrado.'}</p>
