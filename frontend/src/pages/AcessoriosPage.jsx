@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
 // Padronizar para v2
 import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import ConfirmationModal from './../components/ConfirmationModal';
 import Pagination from '../../components/Pagination';
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
