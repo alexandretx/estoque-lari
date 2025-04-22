@@ -2,21 +2,47 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
-// Padronizar para v2
-import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
-import ConfirmationModal from './../components/ConfirmationModal';
-import Pagination from '../../components/Pagination';
+import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons'; // Adicionar ícones
+import { TableSkeleton } from '../components/SkeletonLoader'; // Importar Skeleton
+import Pagination from '../components/Pagination'; // Importar Paginação
 
 const API_ACESSORIOS_URL = `${import.meta.env.VITE_API_URL}/api/acessorios`;
+
+const DeleteModal = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmar exclusão</h3>
+        <p className="text-gray-600 mb-6">
+          Tem certeza que deseja excluir este acessório? Esta ação não pode ser desfeita.
+        </p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AcessoriosPage = () => {
   const [acessorios, setAcessorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [selectedAcessorioId, setSelectedAcessorioId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   // Estados de Paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -100,18 +126,15 @@ const AcessoriosPage = () => {
   };
 
   const confirmDelete = (id) => {
-    setSelectedAcessorioId(id);
-    setShowConfirmationModal(true);
+    setDeleteModal({ show: true, id });
   };
 
   const cancelDelete = () => {
-    setShowConfirmationModal(false);
-    setSelectedAcessorioId(null);
+    setDeleteModal({ show: false, id: null });
   };
 
   const handleDelete = async () => {
-    if (!selectedAcessorioId) return;
-    const idToDelete = selectedAcessorioId;
+    const idToDelete = deleteModal.id;
     try {
       await axios.delete(`${API_ACESSORIOS_URL}/${idToDelete}`);
       toast.success('Acessório excluído com sucesso!');
@@ -126,8 +149,7 @@ const AcessoriosPage = () => {
       console.error("Erro ao excluir acessório:", err.response?.data?.message || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir acessório.');
     } finally {
-      setShowConfirmationModal(false);
-      setSelectedAcessorioId(null);
+      setDeleteModal({ show: false, id: null });
     }
   };
 
@@ -135,13 +157,15 @@ const AcessoriosPage = () => {
       navigate(`/acessorios/editar/${id}`);
   };
 
-  // Renderizar ícone de ordenação
-  const renderSortIcon = (columnKey) => {
+  // Função auxiliar para renderizar indicador de ordenação (texto)
+  const renderSortIndicator = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return null;
+        return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
     }
-    // Usar os ícones importados e renomeados
-    return sortConfig.direction === 'asc' ? <SortAscIcon className="w-4 h-4 ml-1" /> : <SortDescIcon className="w-4 h-4 ml-1" />;
+    if (sortConfig.direction === 'asc') {
+      return <span className="ml-1">▲</span>;
+    }
+    return <span className="ml-1">▼</span>;
   };
 
   return (
@@ -152,7 +176,7 @@ const AcessoriosPage = () => {
           to="/acessorios/novo"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center justify-center transition duration-200 w-full sm:w-auto"
         >
-          <FiPlus className="w-4 h-4 mr-2" />
+          <PlusIcon className="w-4 h-4 mr-2" />
           Adicionar Acessório
         </Link>
       </div>
@@ -174,13 +198,13 @@ const AcessoriosPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
-                Marca {renderSortIcon('marca')}
+                Marca {renderSortIndicator('marca')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('modelo')}>
-                Modelo {renderSortIcon('modelo')}
+                Modelo {renderSortIndicator('modelo')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('tipo')}>
-                Tipo {renderSortIcon('tipo')}
+                Tipo {renderSortIndicator('tipo')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
@@ -210,14 +234,14 @@ const AcessoriosPage = () => {
                       className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
                       title="Editar"
                     >
-                      <FiEdit className="w-5 h-5"/>
+                      <PencilIcon className="w-5 h-5"/>
                     </button>
                     <button
                       onClick={() => confirmDelete(acessorio._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
                       title="Excluir"
                     >
-                       <FiTrash2 className="w-5 h-5"/>
+                       <TrashIcon className="w-5 h-5"/>
                     </button>
                   </td>
                 </tr>
@@ -235,12 +259,10 @@ const AcessoriosPage = () => {
          )}
       </div>
 
-      <ConfirmationModal 
-        isOpen={showConfirmationModal}
+      <DeleteModal 
+        isOpen={deleteModal.show}
         onClose={cancelDelete}
         onConfirm={handleDelete}
-        title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir este acessório? Esta ação não pode ser desfeita."
       />
     </div>
   );

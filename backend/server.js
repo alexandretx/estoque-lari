@@ -11,7 +11,6 @@ const celularRoutes = require('./routes/celularRoutes');
 const acessorioRoutes = require('./routes/acessorioRoutes'); // Adicionado
 const planoRoutes = require('./routes/planoRoutes'); // Adicionado
 const dashboardRoutes = require('./routes/dashboardRoutes'); // Importar
-const vivoRoutes = require('./routes/vivoRoutes'); // <<< Adicionar import
 
 const app = express();
 
@@ -49,7 +48,6 @@ app.use('/api/celulares', celularRoutes);
 app.use('/api/acessorios', acessorioRoutes); // Adicionado
 app.use('/api/planos', planoRoutes); // Adicionado
 app.use('/api/dashboard', dashboardRoutes); // Usar
-app.use('/api/vivo', vivoRoutes); // <<< Montar as rotas Vivo
 
 // Servir arquivos estáticos em produção
 if (process.env.NODE_ENV === 'production') {

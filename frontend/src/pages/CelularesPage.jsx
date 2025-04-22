@@ -2,20 +2,92 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiEye } from 'react-icons/fi';
-import { ChevronUpIcon as SortAscIcon, ChevronDownIcon as SortDescIcon } from '@heroicons/react/20/solid';
-import ConfirmationModal from '../../components/ConfirmationModal';
-import Pagination from '../../components/Pagination';
-import CelularCard from '../../components/CelularCard';
+import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons';
+import { TableSkeleton } from '../components/SkeletonLoader';
+import Pagination from '../components/Pagination';
 
 const API_CELULARES_URL = `${import.meta.env.VITE_API_URL}/api/celulares`;
+
+const DeleteModal = ({ isOpen, onClose, onConfirm, itemName }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmar exclusão</h3>
+        <p className="text-gray-600 mb-6">
+          Tem certeza que deseja excluir este celular? Esta ação não pode ser desfeita.
+        </p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Card para visualização móvel
+const CelularCard = ({ celular, onEdit, onDelete }) => (
+  <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+    <div className="flex justify-between items-start mb-3">
+      <div>
+        <h3 className="font-medium text-gray-900">{celular.marca}</h3>
+        <p className="text-sm text-gray-600">{celular.modelo}</p>
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={() => onEdit(celular._id)}
+          className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block"
+          title="Editar"
+        >
+          <PencilIcon className="w-5 h-5"/>
+        </button>
+        <button
+          onClick={() => onDelete(celular._id)}
+          className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
+          title="Excluir"
+        >
+          <TrashIcon className="w-5 h-5"/>
+        </button>
+      </div>
+    </div>
+    <div className="flex justify-between text-sm border-b pb-2 mb-2">
+      <span className="text-gray-500">IMEI:</span>
+      <span className="text-gray-900">{celular.imei || '-'}</span>
+    </div>
+    <div className="flex justify-between text-sm border-b pb-2 mb-2">
+      <span className="text-gray-500">Cor:</span>
+      <span className="text-gray-900">{celular.cor || '-'}</span>
+    </div>
+    <div className="flex justify-between text-sm border-b pb-2 mb-2">
+      <span className="text-gray-500">Armazenamento:</span>
+      <span className="text-gray-900">{celular.armazenamento || '-'}</span>
+    </div>
+    {celular.observacoes && (
+      <div className="mt-2 pt-2 border-t border-gray-100">
+        <p className="text-xs text-gray-500">Observações:</p>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{celular.observacoes}</p>
+      </div>
+    )}
+  </div>
+);
 
 const CelularesPage = () => {
   const [celulares, setCelulares] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [selectedCelularId, setSelectedCelularId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,7 +96,6 @@ const CelularesPage = () => {
   const [limit] = useState(10);
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: 'marca', direction: 'asc' });
-  const [isGridView, setIsGridView] = useState(true);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -92,9 +163,16 @@ const CelularesPage = () => {
     }
   };
 
+  const confirmDelete = (id) => {
+    setDeleteModal({ show: true, id });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ show: false, id: null });
+  };
+
   const handleDelete = async () => {
-    if (!selectedCelularId) return;
-    const idToDelete = selectedCelularId;
+    const idToDelete = deleteModal.id;
     try {
       await axios.delete(`${API_CELULARES_URL}/${idToDelete}`);
       toast.success('Celular excluído com sucesso!');
@@ -108,30 +186,22 @@ const CelularesPage = () => {
       console.error("Erro ao excluir celular:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || 'Erro ao excluir celular.');
     } finally {
-      setShowConfirmationModal(false);
-      setSelectedCelularId(null);
+       setDeleteModal({ show: false, id: null });
     }
-  };
-
-  const openModal = (id) => {
-    setSelectedCelularId(id);
-    setShowConfirmationModal(true);
-  };
-
-  const closeModal = () => {
-    setShowConfirmationModal(false);
-    setSelectedCelularId(null);
   };
 
   const navigateToEdit = (id) => {
     navigate(`/celulares/editar/${id}`);
   };
 
-  const renderSortIcon = (columnKey) => {
+  const renderSortIndicator = (columnKey) => {
     if (sortConfig.key !== columnKey) {
-      return null;
+      return <span className="ml-1 opacity-0 group-hover:opacity-50">↕</span>;
     }
-    return sortConfig.direction === 'asc' ? <SortAscIcon className="w-4 h-4 ml-1" /> : <SortDescIcon className="w-4 h-4 ml-1" />;
+    if (sortConfig.direction === 'asc') {
+      return <span className="ml-1">▲</span>;
+    }
+    return <span className="ml-1">▼</span>;
   };
 
   return (
@@ -142,7 +212,7 @@ const CelularesPage = () => {
           to="/celulares/novo"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center justify-center transition duration-200 w-full sm:w-auto"
         >
-          <FiPlus className="w-4 h-4 mr-2" />
+          <PlusIcon className="w-4 h-4 mr-2" />
           Adicionar Celular
         </Link>
       </div>
@@ -172,7 +242,7 @@ const CelularesPage = () => {
                 key={celular._id}
                 celular={celular}
                 onEdit={navigateToEdit}
-                onDelete={openModal}
+                onDelete={confirmDelete}
               />
             ))}
           </div>
@@ -193,10 +263,10 @@ const CelularesPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('marca')}>
-                Marca/Modelo {renderSortIcon('marca')}
+                Marca/Modelo {renderSortIndicator('marca')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('imei')}>
-                IMEI {renderSortIcon('imei')}
+                IMEI {renderSortIndicator('imei')}
               </th>
               <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200 group" onClick={() => handleSort('cor')}>
                 Cor {renderSortIndicator('cor')}
@@ -245,7 +315,7 @@ const CelularesPage = () => {
                       <PencilIcon className="w-5 h-5"/>
                     </button>
                     <button
-                      onClick={() => openModal(celular._id)}
+                      onClick={() => confirmDelete(celular._id)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block"
                       title="Excluir"
                     >
@@ -267,24 +337,11 @@ const CelularesPage = () => {
         )}
       </div>
 
-      {/* Paginação */}
-      {!loading && totalPages > 1 && (
-          <Pagination 
-              currentPage={currentPage} 
-              totalPages={totalPages} 
-              onPageChange={handlePageChange} 
-              totalItems={totalCelulares} 
-              itemsPerPage={limit} 
-          />
-       )}
-
-      {/* Usar ConfirmationModal - Corrigir a duplicação */}
-      <ConfirmationModal
-        isOpen={showConfirmationModal}
-        onClose={closeModal}
+      <DeleteModal 
+        isOpen={deleteModal.show}
+        onClose={cancelDelete}
         onConfirm={handleDelete}
-        title="Confirmar Exclusão"
-        message="Tem certeza que deseja deletar este celular? Esta ação não pode ser desfeita."
+        itemName="celular"
       />
     </div>
   );
