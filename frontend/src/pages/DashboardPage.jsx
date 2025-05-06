@@ -9,16 +9,16 @@ const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activi
 const API_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/old-items`;
 
 // Componente de Card reutilizável com ícone e animação
-const StatCard = ({ title, value, linkTo, bgColor = 'from-purple-500 to-violet-600', borderColor = 'border-purple-500', icon, subtext }) => (
-  <Link to={linkTo} className="stat-card">
+const StatCard = ({ title, value, linkTo, icon, subtext }) => (
+  <Link to={linkTo} className="stat-card group">
     <div className="flex justify-between items-start w-full">
       <div>
-        <p className="text-secondary mb-1">{title}</p>
-        <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white my-1">{value ?? '-'}</h3>
+        <p className="text-secondary font-medium mb-1">{title}</p>
+        <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 my-1">{value ?? '-'}</h3>
         {subtext && <p className="text-tiny">{subtext}</p>}
       </div>
       {icon && (
-        <div className="icon-box">
+        <div className="icon-box transform transition-transform group-hover:scale-110">
           {icon}
         </div>
       )}
@@ -58,11 +58,11 @@ const RecentActivities = () => {
       {loading && (
         <div className="animate-pulse space-y-3">
           {[...Array(3)].map((_, index) => (
-            <div key={index} className="flex items-start pb-3 border-b border-gray-700">
-              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-700 rounded-full mr-2 sm:mr-3"></div>
+            <div key={index} className="flex items-start pb-3 border-b border-gray-200">
+              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-full mr-2 sm:mr-3"></div>
               <div className="flex-1">
-                <div className="h-3 sm:h-4 bg-gray-700 rounded w-3/4 mb-1 sm:mb-2"></div>
-                <div className="h-2 sm:h-3 bg-gray-700 rounded w-1/2"></div>
+                <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 mb-1 sm:mb-2"></div>
+                <div className="h-2 sm:h-3 bg-gray-200 rounded w-1/2"></div>
               </div>
             </div>
           ))}
@@ -76,7 +76,7 @@ const RecentActivities = () => {
       )}
       
       {!loading && !error && activities.length === 0 && (
-        <div className="text-center text-gray-400 py-3 sm:py-4">
+        <div className="text-center text-gray-500 py-3 sm:py-4">
           <p className="text-xs sm:text-sm">Nenhuma atividade recente</p>
         </div>
       )}
@@ -85,13 +85,13 @@ const RecentActivities = () => {
         <div className="item-list">
           {activities.map((activity, index) => (
             <div key={index} className="item-list-row">
-              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-purple-900 rounded-full flex items-center justify-center mr-2 sm:mr-3">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{activity.action}</p>
+                <p className="text-sm font-medium text-gray-800 truncate">{activity.action}</p>
                 <p className="text-tiny truncate">{activity.item} • {activity.time}</p>
               </div>
             </div>
@@ -118,6 +118,16 @@ const Icons = {
     <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
     </svg>
+  ),
+  refresh: (
+    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+    </svg>
+  ),
+  add: (
+    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+    </svg>
   )
 };
 
@@ -137,7 +147,7 @@ const OldItemsList = ({ items }) => {
   return (
     <div className="alert alert-warning">
       <div className="flex items-start">
-        <div className="mr-3 mt-0.5">
+        <div className="mr-3 mt-0.5 text-amber-600">
           {Icons.alerta}
         </div>
         <div className="flex-1">
@@ -146,18 +156,18 @@ const OldItemsList = ({ items }) => {
           <div className="max-h-48 overflow-y-auto text-sm space-y-3 pr-2">
             {items.oldCelulares.length > 0 && (
               <div className="mb-3">
-                <p className="font-semibold mb-2 text-amber-200">Celulares ({items.oldCelulares.length})</p>
+                <p className="font-semibold mb-2 text-amber-700">Celulares ({items.oldCelulares.length})</p>
                 <div className="space-y-2">
                   {items.oldCelulares.map(item => (
                     <Link 
                       key={item._id} 
                       to={`/celulares/editar/${item._id}`} 
-                      className="block p-2 bg-amber-900/30 rounded-lg hover:bg-amber-800/40 transition-colors text-white"
+                      className="block p-2 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-amber-900 border border-amber-200"
                       title={`Editar ${item.marca} ${item.modelo}`}
                     >
                       <div className="flex justify-between">
                         <span>{item.marca} {item.modelo} {item.imei && `(IMEI: ${item.imei})`}</span>
-                        <span className="text-amber-300">{formatDate(item.dataCompra)}</span>
+                        <span className="text-amber-600 font-medium">{formatDate(item.dataCompra)}</span>
                       </div>
                     </Link>
                   ))}
@@ -167,18 +177,18 @@ const OldItemsList = ({ items }) => {
             
             {items.oldAcessorios.length > 0 && (
               <div>
-                <p className="font-semibold mb-2 text-amber-200">Acessórios ({items.oldAcessorios.length})</p>
+                <p className="font-semibold mb-2 text-amber-700">Acessórios ({items.oldAcessorios.length})</p>
                 <div className="space-y-2">
                   {items.oldAcessorios.map(item => (
                     <Link 
                       key={item._id} 
                       to={`/acessorios/editar/${item._id}`} 
-                      className="block p-2 bg-amber-900/30 rounded-lg hover:bg-amber-800/40 transition-colors text-white"
+                      className="block p-2 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-amber-900 border border-amber-200"
                       title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
                     >
                       <div className="flex justify-between">
                         <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'})</span>
-                        <span className="text-amber-300">{formatDate(item.dataCompra)}</span>
+                        <span className="text-amber-600 font-medium">{formatDate(item.dataCompra)}</span>
                       </div>
                     </Link>
                   ))}
@@ -233,24 +243,24 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
+    <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 max-w-6xl">
       <header className="mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <h1 className="text-white">Dashboard</h1>
+          <div>
+            <h1 className="text-gray-900">Dashboard</h1>
+            {user && (
+              <p className="text-gray-600 text-sm mt-1">Olá, <span className="font-medium text-gray-800">{user.nome}</span>. Bem-vindo(a) ao seu painel de controle.</p>
+            )}
+          </div>
           
           <button 
             onClick={fetchDashboardData}
             className="btn btn-outline flex items-center text-sm"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
+            {Icons.refresh}
             Atualizar Dados
           </button>
         </div>
-        {user && (
-          <p className="text-purple-300 text-sm mt-1">Olá, <span className="font-medium text-white">{user.nome}</span>. Bem-vindo(a) ao seu painel de controle.</p>
-        )}
       </header>
 
       {/* Alerta de Itens Antigos */}
@@ -259,11 +269,11 @@ const DashboardPage = () => {
       {error && (
         <div className="alert alert-danger mb-6" role="alert">
           <div className="flex">
-            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div>
-              <h4 className="font-bold">Erro</h4>
+              <h4 className="font-bold text-red-800">Erro</h4>
               <p>{error}</p>
             </div>
           </div>
@@ -277,7 +287,6 @@ const DashboardPage = () => {
           title="Celulares em Estoque"
           value={stats?.celulares ?? '...'}
           linkTo="/celulares"
-          bgColor="from-purple-500 to-violet-600"
           icon={Icons.celular}
           subtext="Total de unidades"
         />
@@ -287,7 +296,6 @@ const DashboardPage = () => {
           title="Acessórios em Estoque"
           value={stats?.acessorios ?? '...'}
           linkTo="/acessorios"
-          bgColor="from-violet-500 to-fuchsia-600"
           icon={Icons.acessorio}
           subtext="Total de unidades"
         />
@@ -298,26 +306,25 @@ const DashboardPage = () => {
         <RecentActivities />
       </div>
 
-      {/* Links Rápidos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Link to="/celulares/novo" className="btn btn-primary">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Adicionar Celular
-        </Link>
-        <Link to="/acessorios/novo" className="btn btn-primary">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Adicionar Acessório
-        </Link>
-        <Link to="/celulares" className="btn btn-outline">
-          Ver Todos Celulares
-        </Link>
-        <Link to="/acessorios" className="btn btn-outline">
-          Ver Todos Acessórios
-        </Link>
+      {/* Links Rápidos - Agora com melhor design e espaçamento */}
+      <div className="card p-6">
+        <h3 className="card-title mb-4">Ações Rápidas</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Link to="/celulares/novo" className="btn btn-primary">
+            {Icons.add}
+            Adicionar Celular
+          </Link>
+          <Link to="/acessorios/novo" className="btn btn-primary">
+            {Icons.add}
+            Adicionar Acessório
+          </Link>
+          <Link to="/celulares" className="btn btn-outline">
+            Ver Todos Celulares
+          </Link>
+          <Link to="/acessorios" className="btn btn-outline">
+            Ver Todos Acessórios
+          </Link>
+        </div>
       </div>
     </div>
   );
