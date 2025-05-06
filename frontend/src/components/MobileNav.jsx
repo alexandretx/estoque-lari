@@ -39,20 +39,20 @@ const MobileNav = () => {
   ];
   
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#160126] border-t border-purple-700 z-40">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="flex justify-around">
         {navItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center justify-center w-full py-2 px-1 transition-colors duration-200 ${
+            className={`flex flex-col items-center py-2 px-1 ${
               isActive(item.path)
-                ? 'text-white'
-                : 'text-purple-300 hover:text-purple-100'
+                ? 'text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <div className="w-5 h-5 mb-0.5">{item.icon}</div>
-            <span className="text-[10px]">{item.label}</span>
+            <div className="w-5 h-5">{item.icon}</div>
+            <span className="text-[10px] mt-1">{item.label}</span>
           </Link>
         ))}
       </div>

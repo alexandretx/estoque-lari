@@ -3,28 +3,53 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
+import { PencilIcon, TrashIcon } from './../components/Icons';
 
 const API_STATS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/stats`;
 const API_ACTIVITIES_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/activities`;
 const API_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/old-items`;
 
 // Componente de Card reutilizável com ícone e animação
-const StatCard = ({ title, value, linkTo, icon, subtext }) => (
-  <Link to={linkTo} className="stat-card group">
-    <div className="flex justify-between items-start w-full">
+const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
+  <Link to={linkTo} className={`block p-3 sm:p-4 md:p-6 rounded-lg shadow-md bg-white border-t-4 ${borderColor} hover:shadow-lg transition-all duration-300`}>
+    <div className="flex justify-between items-start">
       <div>
-        <p className="text-secondary font-medium mb-1">{title}</p>
-        <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 my-1">{value ?? '-'}</h3>
-        {subtext && <p className="text-tiny">{subtext}</p>}
+        <p className="text-xs sm:text-sm font-medium text-gray-500">{title}</p>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 my-1">{value ?? '-'}</h3>
+        {subtext && <p className="text-[10px] sm:text-xs text-gray-500">{subtext}</p>}
       </div>
-      {icon && (
-        <div className="icon-box transform transition-transform group-hover:scale-110">
-          {icon}
-        </div>
-      )}
+      {icon && <div className={`text-xl ${bgColor} w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white shadow-md`}>{icon}</div>}
     </div>
   </Link>
 );
+
+// Componente de Gráfico Simplificado (Simulado por barras)
+const SimpleBarChart = ({ data, title }) => {
+  // Encontrar o valor máximo para calcular as porcentagens
+  const maxValue = Math.max(...data.map(item => item.value));
+  
+  return (
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 col-span-1 md:col-span-2 lg:col-span-3">
+      <h3 className="text-sm md:text-lg font-semibold text-gray-700 mb-2 md:mb-4">{title}</h3>
+      <div className="space-y-3 md:space-y-4">
+        {data.map((item, index) => (
+          <div key={index}>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">{item.label}</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-900">{item.value}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full ${item.color}`} 
+                style={{ width: `${(item.value / maxValue) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // Componente para Atividades Recentes (agora buscando do backend)
 const RecentActivities = () => {
@@ -50,15 +75,13 @@ const RecentActivities = () => {
   }, []);
   
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3 className="card-title">Atividades Recentes</h3>
-      </div>
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6">
+      <h3 className="text-sm md:text-lg font-semibold text-gray-700 mb-2 md:mb-4">Atividades Recentes</h3>
       
       {loading && (
         <div className="animate-pulse space-y-3">
           {[...Array(3)].map((_, index) => (
-            <div key={index} className="flex items-start pb-3 border-b border-gray-200">
+            <div key={index} className="flex items-start pb-3 border-b border-gray-100">
               <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-full mr-2 sm:mr-3"></div>
               <div className="flex-1">
                 <div className="h-3 sm:h-4 bg-gray-200 rounded w-3/4 mb-1 sm:mb-2"></div>
@@ -82,17 +105,17 @@ const RecentActivities = () => {
       )}
       
       {!loading && !error && activities.length > 0 && (
-        <div className="item-list">
+        <div className="space-y-3 sm:space-y-4">
           {activities.map((activity, index) => (
-            <div key={index} className="item-list-row">
-              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div key={index} className="flex items-start pb-3 sm:pb-4 border-b border-gray-100">
+              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{activity.action}</p>
-                <p className="text-tiny truncate">{activity.item} • {activity.time}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{activity.action}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">{activity.item} • {activity.time}</p>
               </div>
             </div>
           ))}
@@ -105,33 +128,18 @@ const RecentActivities = () => {
 // Ícones mais modernos usando SVG
 const Icons = {
   celular: (
-    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
     </svg>
   ),
   acessorio: (
-    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
     </svg>
   ),
-  alerta: (
-    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-    </svg>
-  ),
-  refresh: (
-    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-    </svg>
-  ),
-  add: (
-    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-    </svg>
-  )
 };
 
-// Componente para listar itens antigos
+// Novo componente para listar itens antigos
 const OldItemsList = ({ items }) => {
   if (!items || (items.oldCelulares.length === 0 && items.oldAcessorios.length === 0)) {
     return null; // Não renderiza nada se não houver itens antigos
@@ -142,61 +150,40 @@ const OldItemsList = ({ items }) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const totalItems = items.oldCelulares.length + items.oldAcessorios.length;
-
   return (
-    <div className="alert alert-warning">
-      <div className="flex items-start">
-        <div className="mr-3 mt-0.5 text-amber-600">
-          {Icons.alerta}
-        </div>
-        <div className="flex-1">
-          <h4 className="font-bold text-base mb-2">Atenção: {totalItems} {totalItems === 1 ? 'item' : 'itens'} com mais de 180 dias no estoque</h4>
-          
-          <div className="max-h-48 overflow-y-auto text-sm space-y-3 pr-2">
-            {items.oldCelulares.length > 0 && (
-              <div className="mb-3">
-                <p className="font-semibold mb-2 text-amber-700">Celulares ({items.oldCelulares.length})</p>
-                <div className="space-y-2">
-                  {items.oldCelulares.map(item => (
-                    <Link 
-                      key={item._id} 
-                      to={`/celulares/editar/${item._id}`} 
-                      className="block p-2 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-amber-900 border border-amber-200"
-                      title={`Editar ${item.marca} ${item.modelo}`}
-                    >
-                      <div className="flex justify-between">
-                        <span>{item.marca} {item.modelo} {item.imei && `(IMEI: ${item.imei})`}</span>
-                        <span className="text-amber-600 font-medium">{formatDate(item.dataCompra)}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {items.oldAcessorios.length > 0 && (
-              <div>
-                <p className="font-semibold mb-2 text-amber-700">Acessórios ({items.oldAcessorios.length})</p>
-                <div className="space-y-2">
-                  {items.oldAcessorios.map(item => (
-                    <Link 
-                      key={item._id} 
-                      to={`/acessorios/editar/${item._id}`} 
-                      className="block p-2 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-amber-900 border border-amber-200"
-                      title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
-                    >
-                      <div className="flex justify-between">
-                        <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'})</span>
-                        <span className="text-amber-600 font-medium">{formatDate(item.dataCompra)}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+    <div className="mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-md shadow-md">
+      <h3 className="font-bold text-sm mb-2">Atenção: Itens com mais de 180 dias no estoque</h3>
+      <div className="max-h-48 overflow-y-auto text-xs space-y-2 pr-2">
+        {items.oldCelulares.length > 0 && (
+          <div className="mb-2">
+            <p className="font-semibold mb-1">Celulares:</p>
+            {items.oldCelulares.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/celulares/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.marca} ${item.modelo}`}
+              >
+                <span>{item.marca} {item.modelo} (IMEI: {item.imei || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
           </div>
-        </div>
+        )}
+        {items.oldAcessorios.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1">Acessórios:</p>
+            {items.oldAcessorios.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/acessorios/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
+              >
+                <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -238,55 +225,41 @@ const DashboardPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Roda apenas na montagem inicial
 
+  // Dados simulados para o gráfico (poderiam vir do backend)
+  const chartData = [
+    { label: 'Vendas Semana 1', value: 12, color: 'bg-blue-500' },
+    { label: 'Vendas Semana 2', value: 19, color: 'bg-green-500' },
+    { label: 'Vendas Semana 3', value: 3, color: 'bg-red-500' },
+    { label: 'Vendas Semana 4', value: 5, color: 'bg-yellow-500' },
+  ];
+
   if (loading) {
     return <DashboardSkeleton />;
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 max-w-6xl">
-      <header className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h1 className="text-gray-900">Dashboard</h1>
-            {user && (
-              <p className="text-gray-600 text-sm mt-1">Olá, <span className="font-medium text-gray-800">{user.nome}</span>. Bem-vindo(a) ao seu painel de controle.</p>
-            )}
-          </div>
-          
-          <button 
-            onClick={fetchDashboardData}
-            className="btn btn-outline flex items-center text-sm"
-          >
-            {Icons.refresh}
-            Atualizar Dados
-          </button>
-        </div>
-      </header>
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
 
       {/* Alerta de Itens Antigos */}
       <OldItemsList items={oldItems} />
 
       {error && (
-        <div className="alert alert-danger mb-6" role="alert">
-          <div className="flex">
-            <svg className="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <div>
-              <h4 className="font-bold text-red-800">Erro</h4>
-              <p>{error}</p>
-            </div>
-          </div>
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md" role="alert">
+          <p className="font-bold">Erro</p>
+          <p>{error}</p>
         </div>
       )}
 
       {/* Grid de cards de estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
         {/* Card Celulares */}
         <StatCard
           title="Celulares em Estoque"
           value={stats?.celulares ?? '...'}
           linkTo="/celulares"
+          bgColor="bg-gradient-to-r from-blue-500 to-blue-600"
+          borderColor="border-blue-600"
           icon={Icons.celular}
           subtext="Total de unidades"
         />
@@ -296,34 +269,36 @@ const DashboardPage = () => {
           title="Acessórios em Estoque"
           value={stats?.acessorios ?? '...'}
           linkTo="/acessorios"
+          bgColor="bg-gradient-to-r from-teal-500 to-teal-600"
+          borderColor="border-teal-600"
           icon={Icons.acessorio}
           subtext="Total de unidades"
         />
+
+        {/* Card Planos - REMOVIDO */}
+        {/* 
+        <StatCard
+          title="Planos Cadastrados"
+          value={stats?.planos ?? '...'}
+          linkTo="/planos"
+          bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
+          borderColor="border-purple-600"
+          icon={ 
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          }
+          subtext="Tipos de planos disponíveis"
+        /> 
+        */}
       </div>
 
-      {/* Atividades Recentes */}
-      <div className="mb-8">
-        <RecentActivities />
-      </div>
+      {/* Grid para Gráficos e Atividades */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        {/* Gráfico (Simulado) */}
+        {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
 
-      {/* Links Rápidos - Agora com melhor design e espaçamento */}
-      <div className="card p-6">
-        <h3 className="card-title mb-4">Ações Rápidas</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Link to="/celulares/novo" className="btn btn-primary">
-            {Icons.add}
-            Adicionar Celular
-          </Link>
-          <Link to="/acessorios/novo" className="btn btn-primary">
-            {Icons.add}
-            Adicionar Acessório
-          </Link>
-          <Link to="/celulares" className="btn btn-outline">
-            Ver Todos Celulares
-          </Link>
-          <Link to="/acessorios" className="btn btn-outline">
-            Ver Todos Acessórios
-          </Link>
+        {/* Atividades Recentes */}
+        <div className="lg:col-span-3">
+          <RecentActivities />
         </div>
       </div>
     </div>
