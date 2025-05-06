@@ -196,133 +196,109 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const [oldItems, setOldItems] = useState({ oldCelulares: [], oldAcessorios: [] });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
+  // Função para buscar todos os dados do dashboard
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [statsResponse, oldItemsResponse] = await Promise.all([
-        axios.get(API_STATS_URL),
-        axios.get(API_OLD_ITEMS_URL)
-      ]);
-      
+      // Busca as estatísticas (celulares, acessórios, planos)
+      const statsResponse = await axios.get(API_STATS_URL);
       setStats(statsResponse.data);
+
+      // Busca os itens antigos
+      const oldItemsResponse = await axios.get(API_OLD_ITEMS_URL);
       setOldItems(oldItemsResponse.data);
 
     } catch (err) {
-      console.error("Erro ao buscar dados do dashboard:", err.response?.data?.message || err.message);
-      setError(err.response?.data?.message || 'Erro ao carregar dados do dashboard.');
+      console.error("Erro ao buscar dados do dashboard:", err);
+      setError("Falha ao carregar dados do dashboard. Tente novamente.");
+      // Limpar stats em caso de erro para não mostrar dados antigos
+      setStats(null);
+      setOldItems({ oldCelulares: [], oldAcessorios: [] });
     } finally {
       setLoading(false);
     }
   };
 
-  // Preparar dados para o gráfico de barras
-  const chartData = stats ? [
-    { label: 'Celulares', value: stats.celulares, color: 'bg-blue-600' },
-    { label: 'Acessórios', value: stats.acessorios, color: 'bg-green-600' }
-  ] : [];
+  useEffect(() => {
+    fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Roda apenas na montagem inicial
+
+  // Dados simulados para o gráfico (poderiam vir do backend)
+  const chartData = [
+    { label: 'Vendas Semana 1', value: 12, color: 'bg-blue-500' },
+    { label: 'Vendas Semana 2', value: 19, color: 'bg-green-500' },
+    { label: 'Vendas Semana 3', value: 3, color: 'bg-red-500' },
+    { label: 'Vendas Semana 4', value: 5, color: 'bg-yellow-500' },
+  ];
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
-    <div className="container mx-auto p-3 sm:p-4 md:p-6 overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-        <div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">Dashboard</h2>
-          {user && (
-            <p className="mt-1 text-xs sm:text-sm text-gray-600">Bem-vindo(a) de volta, <span className="font-medium text-gray-800">{user.nome}</span></p>
-          )}
-        </div>
-        <button 
-          onClick={fetchDashboardData}
-          className="mt-3 sm:mt-0 px-3 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center sm:justify-start text-xs sm:text-sm w-full sm:w-auto"
-        >
-          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-          Atualizar
-        </button>
-      </div>
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
 
+      {/* Alerta de Itens Antigos */}
       <OldItemsList items={oldItems} />
 
-      {loading && (
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-            {[...Array(2)].map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-20 mb-1 sm:mb-2"></div>
-                    <div className="h-5 sm:h-6 bg-gray-200 rounded w-16 mb-1"></div>
-                    <div className="h-2 sm:h-3 bg-gray-200 rounded w-12"></div>
-                  </div>
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 col-span-1 md:col-span-2 lg:col-span-3 h-40"></div>
-            <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6 h-40"></div>
-          </div>
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md" role="alert">
+          <p className="font-bold">Erro</p>
+          <p>{error}</p>
         </div>
       )}
 
-      {error && !loading && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 sm:p-4 rounded-md relative mb-4 sm:mb-6 shadow-md" role="alert">
-          <p className="font-bold text-xs sm:text-sm">Erro ao carregar dados</p>
-          <p className="text-xs">{error}</p>
-          <button onClick={fetchDashboardData} className="mt-2 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">Tentar Novamente</button>
+      {/* Grid de cards de estatísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+        {/* Card Celulares */}
+        <StatCard
+          title="Celulares em Estoque"
+          value={stats?.celulares ?? '...'}
+          linkTo="/celulares"
+          bgColor="bg-gradient-to-r from-blue-500 to-blue-600"
+          borderColor="border-blue-600"
+          icon={Icons.celular}
+          subtext="Total de unidades"
+        />
+
+        {/* Card Acessórios */}
+        <StatCard
+          title="Acessórios em Estoque"
+          value={stats?.acessorios ?? '...'}
+          linkTo="/acessorios"
+          bgColor="bg-gradient-to-r from-teal-500 to-teal-600"
+          borderColor="border-teal-600"
+          icon={Icons.acessorio}
+          subtext="Total de unidades"
+        />
+
+        {/* Card Planos */}
+        <StatCard
+          title="Planos Cadastrados"
+          value={stats?.planos ?? '...'}
+          linkTo="/planos"
+          bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
+          borderColor="border-purple-600"
+          icon={ 
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          }
+          subtext="Tipos de planos disponíveis"
+        />
+      </div>
+
+      {/* Grid para Gráficos e Atividades */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        {/* Gráfico (Simulado) */}
+        {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
+
+        {/* Atividades Recentes */}
+        <div className="lg:col-span-3">
+          <RecentActivities />
         </div>
-      )}
-
-      {!loading && stats && !error && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-            <StatCard
-              title="Celulares em Estoque"
-              value={stats.celulares}
-              linkTo="/celulares"
-              bgColor="bg-blue-600"
-              borderColor="border-blue-600"
-              icon={Icons.celular}
-              subtext="Gerenciar celulares"
-            />
-            <StatCard
-              title="Acessórios em Estoque"
-              value={stats.acessorios}
-              linkTo="/acessorios"
-              bgColor="bg-green-600"
-              borderColor="border-green-600"
-              icon={Icons.acessorio}
-              subtext="Gerenciar acessórios"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-            <div className="lg:col-span-2">
-              <SimpleBarChart data={chartData} title="Visão Geral do Estoque" />
-            </div>
-            <RecentActivities />
-          </div>
-        </>
-      )}
-
-      {!loading && !stats && !error && (
-        <div className="text-center py-6 sm:py-8 bg-white rounded-lg shadow">
-          <svg className="mx-auto h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <h3 className="mt-2 text-xs font-medium text-gray-900 sm:text-sm">Sem dados disponíveis</h3>
-          <p className="mt-1 text-xs text-gray-500">Não foi possível carregar as estatísticas.</p>
-          <div className="mt-4 sm:mt-6">
-            <button onClick={fetchDashboardData} className="bg-blue-600 px-3 py-1.5 text-white rounded-md text-xs sm:text-sm hover:bg-blue-700">Tentar Novamente</button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
