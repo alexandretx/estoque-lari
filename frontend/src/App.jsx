@@ -24,7 +24,7 @@ function App() {
   const isMobile = window.innerWidth < 768;
 
   return (
-    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden">
+    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden bg-gray-100">
       <Navbar />
       <main className="flex-grow pb-16 md:pb-0 px-2 sm:px-4 md:px-6">
         <Routes>
