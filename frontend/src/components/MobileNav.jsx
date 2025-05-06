@@ -45,14 +45,14 @@ const MobileNav = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center py-2 px-1 ${
+            className={`flex flex-col items-center justify-center w-full py-2 px-1 transition-colors duration-200 ${
               isActive(item.path)
-                ? 'text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-indigo-600 font-medium'
+                : 'text-gray-500 hover:text-indigo-500'
             }`}
           >
-            <div className="w-5 h-5">{item.icon}</div>
-            <span className="text-[10px] mt-1">{item.label}</span>
+            <div className="w-5 h-5 mb-0.5">{item.icon}</div>
+            <span className="text-[10px]">{item.label}</span>
           </Link>
         ))}
       </div>
