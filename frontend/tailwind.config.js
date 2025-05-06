@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-purple-dark': 'rgb(32 10 49)',
+        'brand-purple-dark': '#160126',
       }
     },
   },
