@@ -7,21 +7,20 @@ const PlanoMovel = require('../models/PlanoMovel');
 // @access  Private
 exports.getDashboardStats = async (req, res) => {
     try {
-        // Contar documentos em paralelo
-        const [totalCelularesDocs, totalAcessoriosDocs, totalPlanos] = await Promise.all([
+        // Contar documentos em paralelo (apenas Celulares e Acessórios)
+        const [totalCelularesDocs, totalAcessoriosDocs] = await Promise.all([
             // Contar o número total de documentos na coleção Celular
             Celular.countDocuments(),
             // Contar o número total de documentos na coleção Acessorio
             Acessorio.countDocuments(),
-            // Contagem simples de planos (mantém a mesma lógica)
-            PlanoMovel.countDocuments()
+            // Removida a contagem de PlanoMovel
         ]);
 
         // Os resultados de countDocuments já são os números totais
         res.status(200).json({
-            celulares: totalCelularesDocs,     // Retorna a contagem de documentos
-            acessorios: totalAcessoriosDocs,   // Retorna a contagem de documentos
-            planos: totalPlanos
+            celulares: totalCelularesDocs,
+            acessorios: totalAcessoriosDocs,
+            // Removida a chave planos
         });
 
     } catch (error) {
