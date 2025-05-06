@@ -42,3 +42,47 @@ body {
 html, #root {
   height: 100%;
 }
+
+/* Animações de Gradiente */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Classe para gradiente roxo animado */
+.bg-animated-purple-gradient {
+  background: linear-gradient(-45deg, 
+    rgba(88, 28, 135, 0.8), /* violet-800 */
+    rgba(139, 92, 246, 0.8), /* violet-500 */
+    rgba(76, 29, 149, 0.8), /* purple-800 */
+    rgba(192, 132, 252, 0.8) /* purple-400 */
+  );
+  background-size: 400% 400%;
+  animation: gradientAnimation 15s ease infinite;
+  backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 0;
+}
+
+/* Efeito de brilho para cards */
+.card-glow {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); /* Glow violeta suave */
+  transition: box-shadow 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.7); /* Glow violeta mais forte no hover */
+}
+
+/* Estilo para cards no tema escuro */
+.dark-card {
+  @apply bg-gray-800 text-white;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}

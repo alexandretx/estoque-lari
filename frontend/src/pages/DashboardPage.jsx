@@ -11,12 +11,12 @@ const API_OLD_ITEMS_URL = `${import.meta.env.VITE_API_URL}/api/dashboard/old-ite
 
 // Componente de Card reutilizável com ícone e animação
 const StatCard = ({ title, value, linkTo, bgColor = 'bg-blue-500', borderColor = 'border-blue-600', icon, subtext }) => (
-  <Link to={linkTo} className={`block p-3 sm:p-4 md:p-6 rounded-lg shadow-md bg-white border-t-4 ${borderColor} hover:shadow-lg transition-all duration-300`}>
+  <Link to={linkTo} className={`block p-3 sm:p-4 md:p-6 rounded-lg shadow-md dark-card card-glow border-t-4 ${borderColor} hover:shadow-lg transition-all duration-300`}>
     <div className="flex justify-between items-start">
       <div>
-        <p className="text-xs sm:text-sm font-medium text-gray-500">{title}</p>
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 my-1">{value ?? '-'}</h3>
-        {subtext && <p className="text-[10px] sm:text-xs text-gray-500">{subtext}</p>}
+        <p className="text-xs sm:text-sm font-medium text-purple-300">{title}</p>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white my-1">{value ?? '-'}</h3>
+        {subtext && <p className="text-[10px] sm:text-xs text-purple-200">{subtext}</p>}
       </div>
       {icon && <div className={`text-xl ${bgColor} w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white shadow-md`}>{icon}</div>}
     </div>
@@ -75,8 +75,8 @@ const RecentActivities = () => {
   }, []);
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 md:p-6">
-      <h3 className="text-sm md:text-lg font-semibold text-gray-700 mb-2 md:mb-4">Atividades Recentes</h3>
+    <div className="dark-card rounded-lg shadow-md p-3 sm:p-4 md:p-6">
+      <h3 className="text-sm md:text-lg font-semibold text-purple-200 mb-2 md:mb-4">Atividades Recentes</h3>
       
       {loading && (
         <div className="animate-pulse space-y-3">
@@ -107,15 +107,15 @@ const RecentActivities = () => {
       {!loading && !error && activities.length > 0 && (
         <div className="space-y-3 sm:space-y-4">
           {activities.map((activity, index) => (
-            <div key={index} className="flex items-start pb-3 sm:pb-4 border-b border-gray-100">
-              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2 sm:mr-3">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div key={index} className="flex items-start pb-3 sm:pb-4 border-b border-purple-900">
+              <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-purple-900 rounded-full flex items-center justify-center mr-2 sm:mr-3">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{activity.action}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500 truncate">{activity.item} • {activity.time}</p>
+                <p className="text-xs sm:text-sm font-medium text-white truncate">{activity.action}</p>
+                <p className="text-[10px] sm:text-xs text-purple-300 truncate">{activity.item} • {activity.time}</p>
               </div>
             </div>
           ))}
@@ -151,7 +151,7 @@ const OldItemsList = ({ items }) => {
   };
 
   return (
-    <div className="mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-md shadow-md">
+    <div className="mb-6 bg-purple-900/70 border-l-4 border-purple-500 text-white p-4 rounded-md shadow-md">
       <h3 className="font-bold text-sm mb-2">Atenção: Itens com mais de 180 dias no estoque</h3>
       <div className="max-h-48 overflow-y-auto text-xs space-y-2 pr-2">
         {items.oldCelulares.length > 0 && (
@@ -161,7 +161,7 @@ const OldItemsList = ({ items }) => {
               <Link 
                 key={item._id} 
                 to={`/celulares/editar/${item._id}`} 
-                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                className="block p-1.5 bg-purple-50 rounded hover:bg-purple-200 transition-colors text-purple-900"
                 title={`Editar ${item.marca} ${item.modelo}`}
               >
                 <span>{item.marca} {item.modelo} (IMEI: {item.imei || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
@@ -176,7 +176,7 @@ const OldItemsList = ({ items }) => {
               <Link 
                 key={item._id} 
                 to={`/acessorios/editar/${item._id}`} 
-                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                className="block p-1.5 bg-purple-50 rounded hover:bg-purple-200 transition-colors text-purple-900"
                 title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
               >
                 <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
@@ -238,67 +238,73 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8">
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
+    <div className="relative">
+      {/* Fundo com gradiente animado */}
+      <div className="bg-animated-purple-gradient absolute inset-0 rounded-xl overflow-hidden mx-2 my-2"></div>
 
-      {/* Alerta de Itens Antigos */}
-      <OldItemsList items={oldItems} />
+      {/* Conteúdo da Dashboard, agora com z-index para ficar acima do fundo animado */}
+      <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 relative z-10">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
 
-      {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-md" role="alert">
-          <p className="font-bold">Erro</p>
-          <p>{error}</p>
+        {/* Alerta de Itens Antigos */}
+        <OldItemsList items={oldItems} />
+
+        {error && (
+          <div className="bg-red-900/60 border-l-4 border-red-500 text-white p-4 mb-4 rounded-md" role="alert">
+            <p className="font-bold">Erro</p>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Grid de cards de estatísticas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+          {/* Card Celulares */}
+          <StatCard
+            title="Celulares em Estoque"
+            value={stats?.celulares ?? '...'}
+            linkTo="/celulares"
+            bgColor="bg-gradient-to-r from-purple-500 to-violet-600"
+            borderColor="border-purple-500"
+            icon={Icons.celular}
+            subtext="Total de unidades"
+          />
+
+          {/* Card Acessórios */}
+          <StatCard
+            title="Acessórios em Estoque"
+            value={stats?.acessorios ?? '...'}
+            linkTo="/acessorios"
+            bgColor="bg-gradient-to-r from-violet-500 to-fuchsia-600"
+            borderColor="border-violet-500"
+            icon={Icons.acessorio}
+            subtext="Total de unidades"
+          />
+
+          {/* Card Planos - REMOVIDO */}
+          {/* 
+          <StatCard
+            title="Planos Cadastrados"
+            value={stats?.planos ?? '...'}
+            linkTo="/planos"
+            bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
+            borderColor="border-purple-600"
+            icon={ 
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            }
+            subtext="Tipos de planos disponíveis"
+          /> 
+          */}
         </div>
-      )}
 
-      {/* Grid de cards de estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-        {/* Card Celulares */}
-        <StatCard
-          title="Celulares em Estoque"
-          value={stats?.celulares ?? '...'}
-          linkTo="/celulares"
-          bgColor="bg-gradient-to-r from-blue-500 to-blue-600"
-          borderColor="border-blue-600"
-          icon={Icons.celular}
-          subtext="Total de unidades"
-        />
+        {/* Grid para Gráficos e Atividades */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          {/* Gráfico (Simulado) */}
+          {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
 
-        {/* Card Acessórios */}
-        <StatCard
-          title="Acessórios em Estoque"
-          value={stats?.acessorios ?? '...'}
-          linkTo="/acessorios"
-          bgColor="bg-gradient-to-r from-teal-500 to-teal-600"
-          borderColor="border-teal-600"
-          icon={Icons.acessorio}
-          subtext="Total de unidades"
-        />
-
-        {/* Card Planos - REMOVIDO */}
-        {/* 
-        <StatCard
-          title="Planos Cadastrados"
-          value={stats?.planos ?? '...'}
-          linkTo="/planos"
-          bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
-          borderColor="border-purple-600"
-          icon={ 
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          }
-          subtext="Tipos de planos disponíveis"
-        /> 
-        */}
-      </div>
-
-      {/* Grid para Gráficos e Atividades */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-        {/* Gráfico (Simulado) */}
-        {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
-
-        {/* Atividades Recentes */}
-        <div className="lg:col-span-3">
-          <RecentActivities />
+          {/* Atividades Recentes */}
+          <div className="lg:col-span-3">
+            <RecentActivities />
+          </div>
         </div>
       </div>
     </div>
