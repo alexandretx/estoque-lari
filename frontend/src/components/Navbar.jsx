@@ -22,7 +22,7 @@ const Navbar = () => {
   // Evita piscar conteúdo de deslogado durante carregamento inicial
   if (loading) {
     return (
-        <nav className="bg-purple-900 text-white p-3 shadow-md min-h-[56px]">
+        <nav className="bg-brand-purple-dark text-white p-3 shadow-md min-h-[56px]">
             <div className="container mx-auto flex justify-between items-center">
                  <span className="text-lg font-bold">Estoque App</span>
                  {/* Pode adicionar um spinner aqui */}
@@ -32,7 +32,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-purple-900 text-purple-300 p-3 shadow-md sticky top-0 z-50">
+    <nav className="bg-brand-purple-dark text-purple-300 p-3 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link to={isAuthenticated ? "/dashboard" : "/login"} className="text-lg font-bold text-white hover:text-purple-100 transition-colors">
           Estoque App
