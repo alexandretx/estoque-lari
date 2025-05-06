@@ -238,73 +238,67 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="relative">
-      {/* Fundo com gradiente animado */}
-      <div className="bg-animated-purple-gradient absolute inset-0 rounded-xl overflow-hidden mx-2 my-2"></div>
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
 
-      {/* Conteúdo da Dashboard, agora com z-index para ficar acima do fundo animado */}
-      <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 relative z-10">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6 md:mb-8">Dashboard</h1>
+      {/* Alerta de Itens Antigos */}
+      <OldItemsList items={oldItems} />
 
-        {/* Alerta de Itens Antigos */}
-        <OldItemsList items={oldItems} />
-
-        {error && (
-          <div className="bg-red-900/60 border-l-4 border-red-500 text-white p-4 mb-4 rounded-md" role="alert">
-            <p className="font-bold">Erro</p>
-            <p>{error}</p>
-          </div>
-        )}
-
-        {/* Grid de cards de estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
-          {/* Card Celulares */}
-          <StatCard
-            title="Celulares em Estoque"
-            value={stats?.celulares ?? '...'}
-            linkTo="/celulares"
-            bgColor="bg-gradient-to-r from-purple-500 to-violet-600"
-            borderColor="border-purple-500"
-            icon={Icons.celular}
-            subtext="Total de unidades"
-          />
-
-          {/* Card Acessórios */}
-          <StatCard
-            title="Acessórios em Estoque"
-            value={stats?.acessorios ?? '...'}
-            linkTo="/acessorios"
-            bgColor="bg-gradient-to-r from-violet-500 to-fuchsia-600"
-            borderColor="border-violet-500"
-            icon={Icons.acessorio}
-            subtext="Total de unidades"
-          />
-
-          {/* Card Planos - REMOVIDO */}
-          {/* 
-          <StatCard
-            title="Planos Cadastrados"
-            value={stats?.planos ?? '...'}
-            linkTo="/planos"
-            bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
-            borderColor="border-purple-600"
-            icon={ 
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            }
-            subtext="Tipos de planos disponíveis"
-          /> 
-          */}
+      {error && (
+        <div className="bg-red-900/60 border-l-4 border-red-500 text-white p-4 mb-4 rounded-md" role="alert">
+          <p className="font-bold">Erro</p>
+          <p>{error}</p>
         </div>
+      )}
 
-        {/* Grid para Gráficos e Atividades */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {/* Gráfico (Simulado) */}
-          {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
+      {/* Grid de cards de estatísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+        {/* Card Celulares */}
+        <StatCard
+          title="Celulares em Estoque"
+          value={stats?.celulares ?? '...'}
+          linkTo="/celulares"
+          bgColor="bg-gradient-to-r from-purple-500 to-violet-600"
+          borderColor="border-purple-500"
+          icon={Icons.celular}
+          subtext="Total de unidades"
+        />
 
-          {/* Atividades Recentes */}
-          <div className="lg:col-span-3">
-            <RecentActivities />
-          </div>
+        {/* Card Acessórios */}
+        <StatCard
+          title="Acessórios em Estoque"
+          value={stats?.acessorios ?? '...'}
+          linkTo="/acessorios"
+          bgColor="bg-gradient-to-r from-violet-500 to-fuchsia-600"
+          borderColor="border-violet-500"
+          icon={Icons.acessorio}
+          subtext="Total de unidades"
+        />
+
+        {/* Card Planos - REMOVIDO */}
+        {/* 
+        <StatCard
+          title="Planos Cadastrados"
+          value={stats?.planos ?? '...'}
+          linkTo="/planos"
+          bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
+          borderColor="border-purple-600"
+          icon={ 
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          }
+          subtext="Tipos de planos disponíveis"
+        /> 
+        */}
+      </div>
+
+      {/* Grid para Gráficos e Atividades */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+        {/* Gráfico (Simulado) */}
+        {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
+
+        {/* Atividades Recentes */}
+        <div className="lg:col-span-3">
+          <RecentActivities />
         </div>
       </div>
     </div>

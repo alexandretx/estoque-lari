@@ -24,9 +24,13 @@ function App() {
   const isMobile = window.innerWidth < 768;
 
   return (
-    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden">
+    <div className="flex flex-col min-h-screen max-w-[100vw] overflow-x-hidden relative">
+      {/* Fundo com gradiente animado para todo o projeto */}
+      <div className="bg-animated-purple-gradient absolute inset-0 w-full h-full z-0"></div>
+      
+      {/* Conteúdo da aplicação com z-index para ficar acima do fundo animado */}
       <Navbar />
-      <main className="flex-grow pb-16 md:pb-0 px-2 sm:px-4 md:px-6">
+      <main className="flex-grow pb-16 md:pb-0 px-2 sm:px-4 md:px-6 relative z-10">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/login" element={<LoginPage />} />
