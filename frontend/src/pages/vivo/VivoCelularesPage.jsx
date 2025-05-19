@@ -49,6 +49,7 @@ import {
   SunIcon,
   DragHandleIcon,
 } from '@chakra-ui/icons';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/vivo/celulares`;
 
@@ -86,8 +87,11 @@ const VivoCelularesPage = () => {
   const [filteredCelulares, setFilteredCelulares] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [statusFilter, setStatusFilter] = useState('todos');
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isDetailsModalOpen, onOpen: onDetailsModalOpen, onClose: onDetailsModalClose } = useDisclosure();
   const [selectedCelular, setSelectedCelular] = useState(null);
+  const { isOpen: isConfirmModalOpen, onOpen: onConfirmModalOpen, onClose: onConfirmModalClose } = useDisclosure();
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const theme = useTheme();
 
@@ -161,17 +165,25 @@ const VivoCelularesPage = () => {
     setFilteredCelulares(result);
   }, [celulares, searchTerm, sortConfig, statusFilter]);
 
-  const handleDeleteCelular = async (id, marca, modelo) => {
-    if (window.confirm(`Tem certeza que deseja excluir o celular ${marca} ${modelo}? Esta ação é irreversível.`)) {
-      try {
-        await axios.delete(`${API_URL}/${id}`);
-        toast.success(`Celular ${marca} ${modelo} excluído!`);
-        fetchCelulares();
-      } catch (error) {
-        console.error('Erro ao excluir celular:', error);
-        toast.error('Falha ao excluir celular.');
-      }
+  const handleDeleteCelular = (celular) => {
+    setItemToDelete(celular);
+    onConfirmModalOpen();
+  };
+
+  const confirmDeleteHandler = async () => {
+    if (!itemToDelete) return;
+    setIsDeleting(true);
+    try {
+      await axios.delete(`${API_URL}/${itemToDelete._id}`);
+      toast.success(`Celular ${itemToDelete.marca} ${itemToDelete.modelo} excluído!`);
+      fetchCelulares();
+      onConfirmModalClose();
+      setItemToDelete(null);
+    } catch (error) {
+      console.error('Erro ao excluir celular:', error);
+      toast.error('Falha ao excluir celular.');
     }
+    setIsDeleting(false);
   };
 
   const formatDate = (dateString) => {
@@ -186,9 +198,9 @@ const VivoCelularesPage = () => {
     return { colorScheme: 'gray', icon: DragHandleIcon, label: status || 'Indefinido' };
   };
 
-  const handleCelularClick = (celular) => {
+  const handleCelularCardClick = (celular) => {
     setSelectedCelular(celular);
-    onOpen();
+    onDetailsModalOpen();
   };
 
   const CelularCard = ({ celular }) => {
@@ -213,9 +225,9 @@ const VivoCelularesPage = () => {
           borderWidth: '2px', 
         }}
         borderWidth="2px"
-        borderColor="transparent" // Começa transparente, muda no hover
+        borderColor="transparent"
         cursor="pointer"
-        onClick={() => handleCelularClick(celular)}
+        onClick={() => handleCelularCardClick(celular)}
         minH="220px" 
         display="flex"
         flexDirection="column"
@@ -277,7 +289,7 @@ const VivoCelularesPage = () => {
                     color={useColorModeValue(highlightColor, 'white')}
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteCelular(celular._id, celular.marca, celular.modelo);
+                        handleDeleteCelular(celular);
                     }}
                 />
             </Tooltip>
@@ -286,8 +298,8 @@ const VivoCelularesPage = () => {
     );
   };
 
-  const CelularModal = () => (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl" motionPreset="slideInBottom" isCentered>
+  const CelularDetailsModal = () => (
+    <Modal isOpen={isDetailsModalOpen} onClose={onDetailsModalClose} size="xl" motionPreset="slideInBottom" isCentered>
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent bg={cardBg} borderRadius="lg" boxShadow="2xl" mx={4} color={textColor}>
         <ModalHeader color={cardHeaderColor} fontWeight="bold" borderBottomWidth="1px" borderColor={cardBorderColor} px={6} py={4}>
@@ -341,7 +353,7 @@ const VivoCelularesPage = () => {
                   leftIcon={<EditIcon />}
                   colorScheme="blue"
                   variant="outline"
-                  onClick={onClose}
+                  onClick={onDetailsModalClose}
                   size="md"
                   _hover={{ bg: appColors.accentBlue, color: 'white' }}
                   borderColor={appColors.accentBlue}
@@ -355,12 +367,8 @@ const VivoCelularesPage = () => {
                   color="white"
                   _hover={{ bg: appColors.vivoPurple }}
                   onClick={() => {
-                    handleDeleteCelular(
-                      selectedCelular._id,
-                      selectedCelular.marca,
-                      selectedCelular.modelo
-                    );
-                    onClose();
+                    onDetailsModalClose();
+                    handleDeleteCelular(selectedCelular);
                   }}
                   size="md"
                 >
@@ -394,7 +402,7 @@ const VivoCelularesPage = () => {
             borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
           >
             <VStack align={{ base: 'center', md: 'start' }} spacing={1} textAlign={{ base: 'center', md: 'left' }} flexShrink={0}>
-              <Heading as="h1" size="xl" color={pageHeaderColor}> {/* Usando pageHeaderColor */}
+              <Heading as="h1" size="xl" color={pageHeaderColor}>
                 Estoque de Celulares <Text as="span" color={highlightColor}>Vivo</Text>
               </Heading>
               <Text fontSize="md" color={subtleTextColor}>
@@ -429,7 +437,7 @@ const VivoCelularesPage = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-            backdropFilter={useColorModeValue("none", "blur(5px)")} // Efeito de vidro sutil só no dark mode
+            backdropFilter={useColorModeValue("none", "blur(5px)")}
           >
             <HStack spacing={{ base: 3, md: 4}} w="full" direction={{ base: 'column', sm: 'row' }}>
               <InputGroup size="lg" flex={1}>
@@ -445,7 +453,7 @@ const VivoCelularesPage = () => {
                   borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
                   _hover={{ borderColor: appColors.accentBlue }}
                   _focus={{ borderColor: highlightColor, boxShadow: `0 0 0 1px ${highlightColor}`}}
-                  color={textColor} // Garante que o texto do input seja legível
+                  color={textColor}
                 />
               </InputGroup>
 
@@ -459,9 +467,8 @@ const VivoCelularesPage = () => {
                 borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
                 _hover={{ borderColor: appColors.accentBlue }}
                 _focus={{ borderColor: highlightColor, boxShadow: `0 0 0 1px ${highlightColor}`}}
-                color={textColor} // Garante que o texto do select seja legível
+                color={textColor}
               >
-                {/* As options herdarão a cor do Select, mas podem ser estilizadas individualmente se necessário */}
                 <option value="todos" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Todos os Status</option>
                 <option value="Guardado" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Guardado</option>
                 <option value="Vitrine" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Vitrine</option>
@@ -500,7 +507,17 @@ const VivoCelularesPage = () => {
           )}
         </MotionVStack>
 
-        <CelularModal />
+        <CelularDetailsModal />
+        <ConfirmationModal
+            isOpen={isConfirmModalOpen}
+            onClose={onConfirmModalClose}
+            onConfirm={confirmDeleteHandler}
+            title="Confirmar Exclusão de Celular"
+            body={`Tem certeza que deseja excluir o celular ${itemToDelete?.marca} ${itemToDelete?.modelo}? Esta ação é irreversível.`}
+            confirmText="Excluir"
+            cancelText="Cancelar"
+            isLoading={isDeleting}
+        />
       </Container>
     </Box>
   );
