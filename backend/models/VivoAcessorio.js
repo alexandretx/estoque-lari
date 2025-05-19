@@ -20,6 +20,11 @@ const VivoAcessorioSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
+    status: {
+        type: String,
+        enum: ['Guardado', 'Vitrine'],
+        default: 'Guardado',
+    },
     dataCompra: {
         type: Date,
     },

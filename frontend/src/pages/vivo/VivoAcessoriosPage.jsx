@@ -13,6 +13,7 @@ const VivoAcessoriosPage = () => {
   const [filteredAcessorios, setFilteredAcessorios] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [tipoFilter, setTipoFilter] = useState('todos');
+  const [statusFilter, setStatusFilter] = useState('todos');
 
   // Buscar acessórios
   const fetchAcessorios = useCallback(async () => {
@@ -45,6 +46,11 @@ const VivoAcessoriosPage = () => {
     // Aplicar filtro de tipo
     if (tipoFilter !== 'todos') {
       result = result.filter(acessorio => acessorio.tipo === tipoFilter);
+    }
+
+    // Aplicar filtro de status
+    if (statusFilter !== 'todos') {
+      result = result.filter(acessorio => acessorio.status === statusFilter);
     }
 
     // Aplicar busca
@@ -84,7 +90,7 @@ const VivoAcessoriosPage = () => {
     }
 
     setFilteredAcessorios(result);
-  }, [acessorios, searchTerm, sortConfig, tipoFilter]);
+  }, [acessorios, searchTerm, sortConfig, tipoFilter, statusFilter]);
 
   // Função para ordenar
   const requestSort = (key) => {
@@ -113,6 +119,13 @@ const VivoAcessoriosPage = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  // Função para obter a cor do status
+  const getStatusColor = (status) => {
+    if (status === 'Guardado') return 'text-green-600';
+    if (status === 'Vitrine') return 'text-red-600';
+    return 'text-gray-700';
   };
 
   // Estilo para o cabeçalho da coluna ordenável
@@ -160,6 +173,13 @@ const VivoAcessoriosPage = () => {
             >
               Modelo
             </th>
+            <th
+              className="py-2 px-4 font-semibold text-sm text-left"
+              onClick={() => requestSort('status')}
+              style={getSortableHeaderStyle('status')}
+            >
+              Status
+            </th>
             <th className="py-2 px-4 font-semibold text-sm text-left">Cor</th>
             <th 
               className="py-2 px-4 font-semibold text-sm text-left"
@@ -181,7 +201,7 @@ const VivoAcessoriosPage = () => {
         <tbody className="divide-y divide-gray-200">
           {filteredAcessorios.length === 0 ? (
             <tr>
-              <td colSpan="7" className="py-4 px-4 text-center text-gray-500">
+              <td colSpan="8" className="py-4 px-4 text-center text-gray-500">
                 Nenhum acessório encontrado
               </td>
             </tr>
@@ -191,6 +211,9 @@ const VivoAcessoriosPage = () => {
                 <td className="py-2 px-4 text-sm">{acessorio.tipo || 'N/A'}</td>
                 <td className="py-2 px-4 text-sm">{acessorio.marca || 'N/A'}</td>
                 <td className="py-2 px-4 text-sm">{acessorio.modelo || 'N/A'}</td>
+                <td className={`py-2 px-4 text-sm font-medium ${getStatusColor(acessorio.status)}`}>
+                  {acessorio.status || 'N/A'}
+                </td>
                 <td className="py-2 px-4 text-sm">{acessorio.cor || 'N/A'}</td>
                 <td className="py-2 px-4 text-sm">{acessorio.quantidade || '0'}</td>
                 <td className="py-2 px-4 text-sm">{formatDate(acessorio.dataCompra)}</td>
@@ -272,6 +295,20 @@ const VivoAcessoriosPage = () => {
                 {tipo}
               </option>
             ))}
+          </select>
+        </div>
+
+        <div className="flex items-center space-x-2 w-full md:w-auto">
+          <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">Status:</label>
+          <select
+            id="statusFilter"
+            className="pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="todos">Todos</option>
+            <option value="Guardado">Guardado</option>
+            <option value="Vitrine">Vitrine</option>
           </select>
         </div>
       </div>
