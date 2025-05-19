@@ -36,8 +36,13 @@ const VivoCelularFormPage = () => {
           // Formatação da data para o formato esperado pelo input type="date"
           let formattedData = { ...response.data };
           if (formattedData.dataCompra) {
-            const date = new Date(formattedData.dataCompra);
-            formattedData.dataCompra = date.toISOString().split('T')[0];
+            // Criar um objeto Date interpretando a string como UTC
+            const dateObj = new Date(formattedData.dataCompra);
+            // Obter os componentes UTC
+            const year = dateObj.getUTCFullYear();
+            const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // Mês é 0-indexed
+            const day = dateObj.getUTCDate().toString().padStart(2, '0');
+            formattedData.dataCompra = `${year}-${month}-${day}`;
           }
           
           setFormData(formattedData);
