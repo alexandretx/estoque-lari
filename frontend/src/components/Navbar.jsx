@@ -45,6 +45,15 @@ const Navbar = () => {
               <Link to="/dashboard" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Dashboard</Link>
               <Link to="/celulares" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Celulares</Link>
               <Link to="/acessorios" className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors">Acessórios</Link>
+              <div className="relative group">
+                <button className="hover:text-gray-300 px-2 py-1 rounded hover:bg-gray-700 transition-colors flex items-center">
+                  Vivo <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                  <Link to="/vivo/celulares" className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Celulares Vivo</Link>
+                  <Link to="/vivo/acessorios" className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700">Acessórios Vivo</Link>
+                </div>
+              </div>
               <span className="border-l border-gray-600 pl-4 ml-2">Olá, {user.nome}!</span>
               <button
                 onClick={handleLogout}

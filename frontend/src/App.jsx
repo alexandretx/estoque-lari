@@ -16,6 +16,14 @@ import AcessoriosPage from './pages/AcessoriosPage';
 import CelularFormPage from './pages/CelularFormPage';
 import AcessorioFormPage from './pages/AcessorioFormPage';
 
+// Vivo Pages
+import { 
+  VivoCelularesPage, 
+  VivoAcessoriosPage, 
+  VivoCelularFormPage, 
+  VivoAcessorioFormPage 
+} from './pages/vivo';
+
 // Estilos globais adicionais
 import './global.css';
 
@@ -46,6 +54,14 @@ function App() {
               <Route path="/acessorios" element={<AcessoriosPage />} />
               <Route path="/acessorios/novo" element={<AcessorioFormPage />} />
               <Route path="/acessorios/editar/:id" element={<AcessorioFormPage />} />
+
+              {/* Rotas Vivo */}
+              <Route path="/vivo/celulares" element={<VivoCelularesPage />} />
+              <Route path="/vivo/celulares/novo" element={<VivoCelularFormPage />} />
+              <Route path="/vivo/celulares/editar/:id" element={<VivoCelularFormPage />} />
+              <Route path="/vivo/acessorios" element={<VivoAcessoriosPage />} />
+              <Route path="/vivo/acessorios/novo" element={<VivoAcessorioFormPage />} />
+              <Route path="/vivo/acessorios/editar/:id" element={<VivoAcessorioFormPage />} />
           </Route>
 
           {/* Rota Not Found (Opcional) */}

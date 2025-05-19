@@ -141,7 +141,12 @@ const Icons = {
 
 // Novo componente para listar itens antigos
 const OldItemsList = ({ items }) => {
-  if (!items || (items.oldCelulares.length === 0 && items.oldAcessorios.length === 0)) {
+  if (!items || (
+    items.oldCelulares.length === 0 && 
+    items.oldAcessorios.length === 0 &&
+    items.oldVivoCelulares?.length === 0 && 
+    items.oldVivoAcessorios?.length === 0
+  )) {
     return null; // Não renderiza nada se não houver itens antigos
   }
 
@@ -170,7 +175,7 @@ const OldItemsList = ({ items }) => {
           </div>
         )}
         {items.oldAcessorios.length > 0 && (
-          <div>
+          <div className="mb-2">
             <p className="font-semibold mb-1">Acessórios:</p>
             {items.oldAcessorios.map(item => (
               <Link 
@@ -178,6 +183,36 @@ const OldItemsList = ({ items }) => {
                 to={`/acessorios/editar/${item._id}`} 
                 className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
                 title={`Editar ${item.marca} ${item.modelo} (${item.tipo})`}
+              >
+                <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {items.oldVivoCelulares?.length > 0 && (
+          <div className="mb-2">
+            <p className="font-semibold mb-1">Celulares Vivo:</p>
+            {items.oldVivoCelulares.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/vivo/celulares/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.marca} ${item.modelo}`}
+              >
+                <span>{item.marca} {item.modelo} (IMEI: {item.imei || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {items.oldVivoAcessorios?.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1">Acessórios Vivo:</p>
+            {items.oldVivoAcessorios.map(item => (
+              <Link 
+                key={item._id} 
+                to={`/vivo/acessorios/editar/${item._id}`} 
+                className="block p-1.5 bg-yellow-50 rounded hover:bg-yellow-200 transition-colors text-yellow-900"
+                title={`Editar ${item.tipo} ${item.marca} ${item.modelo}`}
               >
                 <span>{item.marca} {item.modelo} ({item.tipo || 'N/A'}) - Compra: {formatDate(item.dataCompra)}</span>
               </Link>
@@ -254,51 +289,74 @@ const DashboardPage = () => {
       {/* Grid de cards de estatísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
         {/* Card Celulares */}
-        <StatCard
-          title="Celulares em Estoque"
+            <StatCard
+              title="Celulares em Estoque"
           value={stats?.celulares ?? '...'}
-          linkTo="/celulares"
+              linkTo="/celulares"
           bgColor="bg-gradient-to-r from-blue-500 to-blue-600"
-          borderColor="border-blue-600"
-          icon={Icons.celular}
+              borderColor="border-blue-600"
+              icon={Icons.celular}
           subtext="Total de unidades"
-        />
+            />
 
         {/* Card Acessórios */}
-        <StatCard
-          title="Acessórios em Estoque"
+            <StatCard
+              title="Acessórios em Estoque"
           value={stats?.acessorios ?? '...'}
-          linkTo="/acessorios"
+              linkTo="/acessorios"
           bgColor="bg-gradient-to-r from-teal-500 to-teal-600"
           borderColor="border-teal-600"
-          icon={Icons.acessorio}
+              icon={Icons.acessorio}
           subtext="Total de unidades"
         />
 
-        {/* Card Planos - REMOVIDO */}
-        {/* 
+        {/* Total de Itens */}
         <StatCard
-          title="Planos Cadastrados"
-          value={stats?.planos ?? '...'}
-          linkTo="/planos"
+          title="Total de Itens"
+          value={stats?.totalItens ?? '...'}
+          linkTo="/dashboard"
+          bgColor="bg-gradient-to-r from-green-500 to-green-600"
+          borderColor="border-green-600"
+          icon={
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          }
+          subtext="Total geral de itens"
+        />
+      </div>
+      
+      {/* Estoque Vivo */}
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Estoque Vivo</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6">
+        <StatCard
+          title="Celulares Vivo"
+          value={stats?.vivoCelulares ?? '...'}
+          linkTo="/vivo/celulares"
           bgColor="bg-gradient-to-r from-purple-500 to-purple-600"
           borderColor="border-purple-600"
-          icon={ 
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          }
-          subtext="Tipos de planos disponíveis"
-        /> 
-        */}
+          icon={Icons.celular}
+          subtext="Estoque exclusivo Vivo"
+        />
+        <StatCard
+          title="Acessórios Vivo"
+          value={stats?.vivoAcessorios ?? '...'}
+          linkTo="/vivo/acessorios"
+          bgColor="bg-gradient-to-r from-indigo-500 to-indigo-600"
+          borderColor="border-indigo-600"
+          icon={Icons.acessorio}
+          subtext="Estoque exclusivo Vivo"
+        />
       </div>
 
       {/* Grid para Gráficos e Atividades */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Gráfico (Simulado) */}
         {/* <SimpleBarChart data={chartData} title="Vendas Simuladas (Exemplo)" /> */}
 
         {/* Atividades Recentes */}
         <div className="lg:col-span-3">
-          <RecentActivities />
+            <RecentActivities />
         </div>
       </div>
     </div>

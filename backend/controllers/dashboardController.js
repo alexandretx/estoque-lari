@@ -1,26 +1,39 @@
 const Celular = require('../models/Celular');
 const Acessorio = require('../models/Acessorio');
 const PlanoMovel = require('../models/PlanoMovel');
+const VivoCelular = require('../models/VivoCelular');
+const VivoAcessorio = require('../models/VivoAcessorio');
 
 // @desc    Obter estatísticas do dashboard
 // @route   GET /api/dashboard/stats
 // @access  Private
 exports.getDashboardStats = async (req, res) => {
     try {
-        // Contar documentos em paralelo (apenas Celulares e Acessórios)
-        const [totalCelularesDocs, totalAcessoriosDocs] = await Promise.all([
+        // Contar documentos em paralelo 
+        const [
+            totalCelularesDocs, 
+            totalAcessoriosDocs,
+            totalVivoCelularesDocs,
+            totalVivoAcessoriosDocs
+        ] = await Promise.all([
             // Contar o número total de documentos na coleção Celular
             Celular.countDocuments(),
             // Contar o número total de documentos na coleção Acessorio
             Acessorio.countDocuments(),
-            // Removida a contagem de PlanoMovel
+            // Contar o número total de celulares da Vivo
+            VivoCelular.countDocuments(),
+            // Contar o número total de acessórios da Vivo
+            VivoAcessorio.countDocuments()
         ]);
 
         // Os resultados de countDocuments já são os números totais
         res.status(200).json({
             celulares: totalCelularesDocs,
             acessorios: totalAcessoriosDocs,
-            // Removida a chave planos
+            vivoCelulares: totalVivoCelularesDocs,
+            vivoAcessorios: totalVivoAcessoriosDocs,
+            // Total de todos os itens para estatísticas gerais
+            totalItens: totalCelularesDocs + totalAcessoriosDocs + totalVivoCelularesDocs + totalVivoAcessoriosDocs
         });
 
     } catch (error) {
@@ -48,7 +61,22 @@ exports.getOldItems = async (req, res) => {
             dataCompra: { $lte: dateLimit }
         }).select('marca modelo tipo dataCompra'); // Selecionar campos necessários
         
-        res.status(200).json({ oldCelulares, oldAcessorios });
+        // Buscar celulares Vivo antigos
+        const oldVivoCelulares = await VivoCelular.find({
+            dataCompra: { $lte: dateLimit }
+        }).select('marca modelo imei dataCompra');
+
+        // Buscar acessórios Vivo antigos
+        const oldVivoAcessorios = await VivoAcessorio.find({
+            dataCompra: { $lte: dateLimit }
+        }).select('tipo marca modelo dataCompra');
+        
+        res.status(200).json({ 
+            oldCelulares, 
+            oldAcessorios,
+            oldVivoCelulares,
+            oldVivoAcessorios
+        });
 
     } catch (error) {
         console.error('Erro ao buscar itens antigos:', error);
