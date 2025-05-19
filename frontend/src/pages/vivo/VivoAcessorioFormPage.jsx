@@ -11,6 +11,7 @@ const initialFormData = {
   modelo: '',
   cor: '',
   status: 'Guardado',
+  dataCompra: '',
   observacoes: ''
 };
 
@@ -44,7 +45,14 @@ const VivoAcessorioFormPage = () => {
           setFetching(true);
           const response = await axios.get(`${API_URL}/${id}`);
           
-          setFormData(response.data);
+          // Formatação da data para o formato esperado pelo input type="date"
+          let formattedData = { ...response.data };
+          if (formattedData.dataCompra) {
+            const date = new Date(formattedData.dataCompra);
+            formattedData.dataCompra = date.toISOString().split('T')[0];
+          }
+          
+          setFormData(formattedData);
           setFetching(false);
         } catch (error) {
           console.error('Erro ao buscar acessório:', error);
@@ -213,6 +221,21 @@ const VivoAcessorioFormPage = () => {
                 <option value="Guardado">Guardado</option>
                 <option value="Vitrine">Vitrine</option>
               </select>
+            </div>
+
+            {/* Data de Compra */}
+            <div>
+              <label htmlFor="dataCompra" className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Compra
+              </label>
+              <input
+                type="date"
+                id="dataCompra"
+                name="dataCompra"
+                value={formData.dataCompra}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
 

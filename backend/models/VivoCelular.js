@@ -27,6 +27,9 @@ const VivoCelularSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
+    dataCompra: {
+        type: Date,
+    },
     status: {
         type: String,
         enum: ['Guardado', 'Vitrine'],

@@ -12,6 +12,7 @@ const initialFormData = {
   armazenamento: '',
   ram: '',
   cor: '',
+  dataCompra: '',
   status: 'Guardado',
   observacoes: ''
 };
@@ -32,7 +33,19 @@ const VivoCelularFormPage = () => {
           setFetching(true);
           const response = await axios.get(`${API_URL}/${id}`);
           
-          setFormData(response.data);
+          // Formatação da data para o formato esperado pelo input type="date"
+          let formattedData = { ...response.data };
+          if (formattedData.dataCompra) {
+            // Criar um objeto Date interpretando a string como UTC
+            const dateObj = new Date(formattedData.dataCompra);
+            // Obter os componentes UTC
+            const year = dateObj.getUTCFullYear();
+            const month = (dateObj.getUTCMonth() + 1).toString().padStart(2, '0'); // Mês é 0-indexed
+            const day = dateObj.getUTCDate().toString().padStart(2, '0');
+            formattedData.dataCompra = `${year}-${month}-${day}`;
+          }
+          
+          setFormData(formattedData);
           setFetching(false);
         } catch (error) {
           console.error('Erro ao buscar celular:', error);
@@ -207,6 +220,21 @@ const VivoCelularFormPage = () => {
                 id="ram"
                 name="ram"
                 value={formData.ram}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Data de Compra */}
+            <div>
+              <label htmlFor="dataCompra" className="block text-sm font-medium text-gray-700 mb-1">
+                Data de Compra
+              </label>
+              <input
+                type="date"
+                id="dataCompra"
+                name="dataCompra"
+                value={formData.dataCompra}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />

@@ -60,7 +60,7 @@ const VivoCelularesPage = () => {
         let bValue = b[sortConfig.key];
 
         // Tratamento especial para datas
-        if (sortConfig.key === 'createdAt') {
+        if (sortConfig.key === 'createdAt' || sortConfig.key === 'dataCompra') {
           aValue = aValue ? new Date(aValue).getTime() : 0;
           bValue = bValue ? new Date(bValue).getTime() : 0;
         } else if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -157,13 +157,20 @@ const VivoCelularesPage = () => {
             >
               Status
             </th>
+            <th 
+              className="py-2 px-4 font-semibold text-sm text-left"
+              onClick={() => requestSort('dataCompra')}
+              style={getSortableHeaderStyle('dataCompra')}
+            >
+              Data de Compra
+            </th>
             <th className="py-2 px-4 font-semibold text-sm text-center">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
           {filteredCelulares.length === 0 ? (
             <tr>
-              <td colSpan="6" className="py-4 px-4 text-center text-gray-500">
+              <td colSpan="7" className="py-4 px-4 text-center text-gray-500">
                 Nenhum celular encontrado
               </td>
             </tr>
@@ -186,6 +193,7 @@ const VivoCelularesPage = () => {
                     {celular.status || 'N/A'}
                   </span>
                 </td>
+                <td className="py-2 px-4 text-sm">{formatDate(celular.dataCompra)}</td>
                 <td className="py-2 px-4 text-sm text-center">
                   <div className="flex justify-center space-x-2">
                     <Link
