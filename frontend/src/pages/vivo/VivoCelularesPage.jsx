@@ -12,14 +12,11 @@ import {
   Input,
   Select,
   useColorModeValue,
-  Card,
-  CardBody,
   Text,
   HStack,
   VStack,
   InputGroup,
   InputLeftElement,
-  SimpleGrid,
   Badge,
   IconButton,
   useDisclosure,
@@ -32,6 +29,11 @@ import {
   Image,
   Tooltip,
   Divider,
+  AspectRatio,
+  Tag,
+  Wrap,
+  WrapItem,
+  Icon,
 } from '@chakra-ui/react';
 import {
   SearchIcon,
@@ -39,15 +41,26 @@ import {
   EditIcon,
   DeleteIcon,
   PhoneIcon,
-  InfoIcon,
   CheckCircleIcon,
   WarningIcon,
+  TimeIcon,
+  MoonIcon,
+  SunIcon,
 } from '@chakra-ui/icons';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/vivo/celulares`;
 
-const MotionBox = motion(Box);
-const MotionCard = motion(Card);
+const MotionFlex = motion(Flex);
+const MotionVStack = motion(VStack);
+
+const vivoColors = {
+  purple: '#660099',
+  pink: '#FF007F',
+  darkPurple: '#4d0073',
+  lightGray: '#f0f0f0',
+  textDark: 'gray.700',
+  textLight: 'whiteAlpha.900',
+};
 
 const VivoCelularesPage = () => {
   const [celulares, setCelulares] = useState([]);
@@ -59,17 +72,20 @@ const VivoCelularesPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedCelular, setSelectedCelular] = useState(null);
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const cardHoverBg = useColorModeValue('gray.50', 'gray.600');
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const cardHoverBg = useColorModeValue('gray.50', 'gray.700');
+  const textColor = useColorModeValue(vivoColors.textDark, vivoColors.textLight);
+  const subtleBg = useColorModeValue('gray.100', 'gray.900');
+  const pageBg = useColorModeValue(
+    `linear-gradient(135deg, ${vivoColors.lightGray} 0%, white 100%)`,
+    `linear-gradient(135deg, ${vivoColors.darkPurple} 0%, #1A202C 100%)`
+  );
 
-  // Buscar celulares
   const fetchCelulares = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(API_URL);
-      setCelulares(response.data);
+      setCelulares(response.data.map(c => ({...c, imageUrl: `https://picsum.photos/seed/${c.modelo || 'phone'}/400/300` })));
       setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar celulares:', error);
@@ -82,14 +98,11 @@ const VivoCelularesPage = () => {
     fetchCelulares();
   }, [fetchCelulares]);
 
-  // Filtrar e classificar celulares
   useEffect(() => {
     let result = [...celulares];
-
     if (statusFilter !== 'todos') {
       result = result.filter(celular => celular.status === statusFilter);
     }
-
     if (searchTerm) {
       const searchTermLower = searchTerm.toLowerCase();
       result = result.filter(
@@ -98,12 +111,10 @@ const VivoCelularesPage = () => {
           celular.modelo?.toLowerCase().includes(searchTermLower)
       );
     }
-
     if (sortConfig.key) {
       result.sort((a, b) => {
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
-
         if (sortConfig.key === 'createdAt') {
           aValue = aValue ? new Date(aValue).getTime() : 0;
           bValue = bValue ? new Date(bValue).getTime() : 0;
@@ -111,17 +122,11 @@ const VivoCelularesPage = () => {
           aValue = aValue.toLowerCase();
           bValue = bValue.toLowerCase();
         }
-
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
-
     setFilteredCelulares(result);
   }, [celulares, searchTerm, sortConfig, statusFilter]);
 
@@ -140,13 +145,14 @@ const VivoCelularesPage = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    const date = new Date(dateString);
+    return `${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
   };
 
-  const getStatusColor = (status) => {
-    if (status === 'Guardado') return 'green';
-    if (status === 'Vitrine') return 'red';
-    return 'gray';
+  const getStatusProps = (status) => {
+    if (status === 'Guardado') return { colorScheme: 'green', icon: CheckCircleIcon };
+    if (status === 'Vitrine') return { colorScheme: 'red', icon: WarningIcon };
+    return { colorScheme: 'gray', icon: InfoIcon };
   };
 
   const handleCelularClick = (celular) => {
@@ -154,144 +160,157 @@ const VivoCelularesPage = () => {
     onOpen();
   };
 
-  const CelularCard = ({ celular }) => (
-    <MotionCard
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
-      bg={cardBg}
-      borderRadius="xl"
-      overflow="hidden"
-      boxShadow="md"
-      _hover={{
-        transform: 'translateY(-5px)',
-        boxShadow: 'lg',
-        bg: cardHoverBg,
-      }}
-      cursor="pointer"
-      onClick={() => handleCelularClick(celular)}
-    >
-      <CardBody p={6}>
-        <VStack align="stretch" spacing={4}>
+  const CelularCard = ({ celular }) => {
+    const statusProps = getStatusProps(celular.status);
+
+    return (
+      <MotionFlex
+        direction="column"
+        bg={cardBg}
+        borderRadius="2xl"
+        boxShadow="xl"
+        overflow="hidden"
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -50, scale: 0.9 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        whileHover={{ y: -10, boxShadow: "2xl" }}
+        cursor="pointer"
+        onClick={() => handleCelularClick(celular)}
+        w={{ base: 'full', sm: '350px', md: '380px' }}
+        m={2}
+      >
+        <AspectRatio ratio={16 / 9} w="full">
+          <Image
+            src={celular.imageUrl || 'https://via.placeholder.com/400x300.png?text=Celular+Vivo'}
+            alt={`Celular ${celular.marca} ${celular.modelo}`}
+            objectFit="cover"
+            borderTopRadius="2xl"
+          />
+        </AspectRatio>
+
+        <VStack p={6} spacing={4} align="stretch" flex={1}>
           <Flex justify="space-between" align="center">
-            <Heading size="md" color="vivo.600">
+            <Heading size="md" color={vivoColors.purple} fontWeight="bold">
               {celular.marca}
             </Heading>
-            <Badge
-              colorScheme={getStatusColor(celular.status)}
-              px={3}
-              py={1}
-              borderRadius="full"
-              fontSize="sm"
-            >
+            <Tag size="lg" colorScheme={statusProps.colorScheme} borderRadius="full" variant="solid">
+              <Icon as={statusProps.icon} mr={2} />
               {celular.status}
-            </Badge>
+            </Tag>
           </Flex>
 
-          <Text fontSize="lg" fontWeight="medium">
+          <Text fontSize="xl" fontWeight="semibold" color={textColor} noOfLines={2}>
             {celular.modelo}
           </Text>
 
-          <Divider />
+          <Divider borderColor={useColorModeValue('gray.200', 'gray.600')} />
 
-          <HStack spacing={4}>
-            <VStack align="start" spacing={1}>
-              <Text fontSize="sm" color="gray.500">
-                Cor
-              </Text>
-              <Text fontSize="md">{celular.cor || 'N/A'}</Text>
-            </VStack>
+          <VStack spacing={2} align="stretch" fontSize="sm">
+            <HStack>
+              <Text fontWeight="medium" color="gray.500">Cor:</Text>
+              <Text color={textColor}>{celular.cor || 'Não informada'}</Text>
+            </HStack>
+            <HStack>
+              <Icon as={TimeIcon} color="gray.500" />
+              <Text fontWeight="medium" color="gray.500">Cadastro:</Text>
+              <Text color={textColor}>{formatDate(celular.createdAt)}</Text>
+            </HStack>
+          </VStack>
 
-            <VStack align="start" spacing={1}>
-              <Text fontSize="sm" color="gray.500">
-                Data de Cadastro
-              </Text>
-              <Text fontSize="md">{formatDate(celular.createdAt)}</Text>
-            </VStack>
-          </HStack>
-
-          <HStack spacing={2} justify="flex-end">
-            <Tooltip label="Editar">
-              <IconButton
-                as={Link}
-                to={`/vivo/celulares/editar/${celular._id}`}
-                icon={<EditIcon />}
-                colorScheme="blue"
-                variant="ghost"
-                size="sm"
-                aria-label="Editar"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </Tooltip>
-            <Tooltip label="Excluir">
-              <IconButton
-                icon={<DeleteIcon />}
-                colorScheme="red"
-                variant="ghost"
-                size="sm"
-                aria-label="Excluir"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteCelular(celular._id, celular.marca, celular.modelo);
-                }}
-              />
-            </Tooltip>
+          <HStack
+            spacing={3}
+            justify="flex-end"
+            pt={2}
+            opacity={0}
+            _groupHover={{ opacity: 1 }}
+            transition="opacity 0.3s ease-in-out"
+          >
           </HStack>
         </VStack>
-      </CardBody>
-    </MotionCard>
-  );
+         <Flex
+          position="absolute"
+          bottom={4}
+          right={4}
+          opacity={0}
+          transition="opacity 0.3s ease-in-out, transform 0.3s ease-in-out"
+          transform="translateY(10px)"
+          _hover={{ opacity: 1, transform: "translateY(0)" }}
+        >
+          <Tooltip label="Editar Celular" placement="top">
+            <IconButton
+              as={Link}
+              to={`/vivo/celulares/editar/${celular._id}`}
+              icon={<EditIcon />}
+              colorScheme="blue"
+              aria-label="Editar"
+              size="md"
+              isRound
+              boxShadow="md"
+              onClick={(e) => e.stopPropagation()}
+              mr={2}
+            />
+          </Tooltip>
+          <Tooltip label="Excluir Celular" placement="top">
+            <IconButton
+              icon={<DeleteIcon />}
+              colorScheme="pink"
+              aria-label="Excluir"
+              size="md"
+              isRound
+              boxShadow="md"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteCelular(celular._id, celular.marca, celular.modelo);
+              }}
+            />
+          </Tooltip>
+        </Flex>
+      </MotionFlex>
+    );
+  };
 
   const CelularModal = () => (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay backdropFilter="blur(10px)" />
-      <ModalContent>
-        <ModalHeader color="vivo.600">
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl" motionPreset="slideInBottom" isCentered>
+      <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
+      <ModalContent bg={cardBg} borderRadius="xl" boxShadow="dark-lg">
+        <ModalHeader color={vivoColors.purple} fontWeight="bold" borderBottomWidth="1px" borderColor={useColorModeValue('gray.200', 'gray.700')}>
           <HStack>
             <PhoneIcon />
-            <Text>Detalhes do Celular</Text>
+            <Text>Detalhes do Celular Vivo</Text>
           </HStack>
         </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
+        <ModalCloseButton _hover={{ bg: 'red.500', color: 'white' }} />
+        <ModalBody py={8} px={10}>
           {selectedCelular && (
-            <VStack align="stretch" spacing={4}>
-              <HStack justify="space-between">
-                <Heading size="md">{selectedCelular.marca}</Heading>
-                <Badge
-                  colorScheme={getStatusColor(selectedCelular.status)}
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                >
-                  {selectedCelular.status}
-                </Badge>
-              </HStack>
+            <VStack align="stretch" spacing={6}>
+              <Flex direction={{ base: 'column', md: 'row' }} align="start" gap={8}>
+                <AspectRatio ratio={4/3} w={{ base: 'full', md: '300px' }} borderRadius="lg" overflow="hidden">
+                    <Image src={selectedCelular.imageUrl} alt={`Celular ${selectedCelular.marca} ${selectedCelular.modelo}`} objectFit="cover" />
+                </AspectRatio>
+                <VStack align="stretch" spacing={4} flex={1}>
+                    <HStack justify="space-between">
+                        <Heading size="lg" color={vivoColors.purple}>{selectedCelular.marca}</Heading>
+                        <Tag size="lg" colorScheme={getStatusProps(selectedCelular.status).colorScheme} borderRadius="full">
+                            <Icon as={getStatusProps(selectedCelular.status).icon} mr={2}/>
+                            {selectedCelular.status}
+                        </Tag>
+                    </HStack>
+                    <Text fontSize="2xl" fontWeight="semibold" color={textColor}>{selectedCelular.modelo}</Text>
+                    <Divider />
+                    <Text fontSize="md" color={textColor}><Text as="span" fontWeight="bold">Cor:</Text> {selectedCelular.cor || 'Não informada'}</Text>
+                    <Text fontSize="md" color={textColor}><Text as="span" fontWeight="bold">Cadastrado em:</Text> {formatDate(selectedCelular.createdAt)}</Text>
+                </VStack>
+              </Flex>
 
-              <Text fontSize="xl" fontWeight="medium">
-                {selectedCelular.modelo}
+              <Divider mt={4} />
+
+              <Text fontSize="lg" fontWeight="bold" color={textColor}>Observações:</Text>
+              <Text fontStyle="italic" color="gray.500">
+                {selectedCelular.observacoes || 'Nenhuma observação adicionada para este celular.'}
               </Text>
 
-              <Divider />
-
-              <SimpleGrid columns={2} spacing={4}>
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" color="gray.500">
-                    Cor
-                  </Text>
-                  <Text fontSize="md">{selectedCelular.cor || 'N/A'}</Text>
-                </VStack>
-
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" color="gray.500">
-                    Data de Cadastro
-                  </Text>
-                  <Text fontSize="md">{formatDate(selectedCelular.createdAt)}</Text>
-                </VStack>
-              </SimpleGrid>
-
-              <HStack spacing={4} justify="flex-end">
+              <HStack spacing={4} justify="flex-end" mt={6}>
                 <Button
                   as={Link}
                   to={`/vivo/celulares/editar/${selectedCelular._id}`}
@@ -299,13 +318,13 @@ const VivoCelularesPage = () => {
                   colorScheme="blue"
                   variant="outline"
                   onClick={onClose}
+                  size="lg"
                 >
                   Editar
                 </Button>
                 <Button
                   leftIcon={<DeleteIcon />}
-                  colorScheme="red"
-                  variant="outline"
+                  colorScheme="pink"
                   onClick={() => {
                     handleDeleteCelular(
                       selectedCelular._id,
@@ -314,6 +333,7 @@ const VivoCelularesPage = () => {
                     );
                     onClose();
                   }}
+                  size="lg"
                 >
                   Excluir
                 </Button>
@@ -326,72 +346,117 @@ const VivoCelularesPage = () => {
   );
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Flex justify="space-between" align="center">
-          <VStack align="start" spacing={2}>
-            <Heading size="lg" color="vivo.600">
-              Celulares Vivo
-            </Heading>
-            <Text color="gray.500">
-              Gerencie seu estoque de celulares da Vivo
-            </Text>
-          </VStack>
-          <Button
-            as={Link}
-            to="/vivo/celulares/novo"
-            leftIcon={<AddIcon />}
-            colorScheme="vivo"
-            variant="vivo"
-            size="lg"
-            px={8}
+    <Box bg={pageBg} minH="100vh">
+      <Container maxW="container.2xl" py={{ base: 6, md: 12 }} px={{ base: 4, md: 8 }}>
+        <MotionVStack
+            spacing={10}
+            align="stretch"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            justify="space-between"
+            align={{ base: 'stretch', md: 'center' }}
+            gap={4}
           >
-            Adicionar Celular
-          </Button>
-        </Flex>
-
-        <Card>
-          <CardBody>
-            <VStack spacing={6}>
-              <HStack spacing={4} w="full">
-                <InputGroup size="lg">
-                  <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    placeholder="Buscar por marca, modelo..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    size="lg"
-                  />
-                </InputGroup>
-
-                <Select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  w="200px"
-                  size="lg"
-                >
-                  <option value="todos">Todos os Status</option>
-                  <option value="Guardado">Guardado</option>
-                  <option value="Vitrine">Vitrine</option>
-                </Select>
-              </HStack>
-
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w="full">
-                <AnimatePresence>
-                  {filteredCelulares.map((celular) => (
-                    <CelularCard key={celular._id} celular={celular} />
-                  ))}
-                </AnimatePresence>
-              </SimpleGrid>
+            <VStack align={{ base: 'center', md: 'start' }} spacing={1} textAlign={{ base: 'center', md: 'left' }}>
+              <Heading as="h1" size="2xl" color={useColorModeValue(vivoColors.purple, 'white')}>
+                Catálogo Exclusivo <Text as="span" color={vivoColors.pink}>Vivo</Text>
+              </Heading>
+              <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.300')}>
+                Explore nossa seleção especial de celulares da Vivo.
+              </Text>
             </VStack>
-          </CardBody>
-        </Card>
-      </VStack>
+            <Button
+              as={Link}
+              to="/vivo/celulares/novo"
+              leftIcon={<AddIcon />}
+              bg={vivoColors.purple}
+              color="white"
+              _hover={{ bg: vivoColors.pink }}
+              size="lg"
+              px={10}
+              py={7}
+              borderRadius="xl"
+              boxShadow="lg"
+              transition="all 0.3s ease"
+            >
+              Novo Celular
+            </Button>
+          </Flex>
 
-      <CelularModal />
-    </Container>
+          <VStack
+            bg={useColorModeValue('whiteAlpha.800', 'blackAlpha.600')}
+            p={{ base: 4, md: 8 }}
+            borderRadius="2xl"
+            boxShadow="lg"
+            spacing={6}
+            backdropFilter="blur(10px)"
+          >
+            <HStack spacing={{ base: 2, md: 4}} w="full" direction={{ base: 'column', md: 'row' }}>
+              <InputGroup size="lg" flex={1}>
+                <InputLeftElement pointerEvents="none">
+                  <SearchIcon color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Buscar por marca, modelo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg={useColorModeValue('white', 'gray.700')}
+                  borderRadius="lg"
+                  _focus={{ borderColor: vivoColors.pink, boxShadow: `0 0 0 1px ${vivoColors.pink}`}}
+                />
+              </InputGroup>
+
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                w={{ base: 'full', md: '250px' }}
+                size="lg"
+                bg={useColorModeValue('white', 'gray.700')}
+                borderRadius="lg"
+                _focus={{ borderColor: vivoColors.pink, boxShadow: `0 0 0 1px ${vivoColors.pink}`}}
+              >
+                <option value="todos">Todos os Status</option>
+                <option value="Guardado">Guardado</option>
+                <option value="Vitrine">Vitrine</option>
+              </Select>
+            </HStack>
+          </VStack>
+
+          {loading ? (
+            <Flex justify="center" align="center" h="300px">
+                <VStack>
+                    <MoonIcon color={vivoColors.purple} boxSize="40px" className="animate-spin"/>
+                    <Text color={textColor}>Carregando celulares...</Text>
+                </VStack>
+            </Flex>
+          ) : (
+            <Wrap spacing={8} justify="center" w="full">
+              <AnimatePresence>
+                {filteredCelulares.length > 0 ? (
+                  filteredCelulares.map((celular) => (
+                    <WrapItem key={celular._id} display="flex">
+                      <CelularCard celular={celular} />
+                    </WrapItem>
+                  ))
+                ) : (
+                  <MotionVStack justify="center" align="center" h="200px" spacing={4} initial={{opacity:0}} animate={{opacity:1}}>
+                    <Icon as={WarningIcon} boxSize="50px" color="yellow.400" />
+                    <Heading size="md" color={textColor}>Nenhum celular encontrado.</Heading>
+                    <Text color="gray.500">Tente ajustar os filtros ou o termo de busca.</Text>
+                  </MotionVStack>
+                )}
+              </AnimatePresence>
+            </Wrap>
+          )}
+        </MotionVStack>
+
+        <CelularModal />
+      </Container>
+    </Box>
   );
 };
 
