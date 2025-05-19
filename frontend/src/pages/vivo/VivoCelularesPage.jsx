@@ -56,19 +56,26 @@ const MotionFlex = motion(Flex);
 const MotionVStack = motion(VStack);
 const MotionBox = motion(Box);
 
+// Paleta de cores com foco no Roxo Vivo e contraste
 const appColors = {
-  vivoPurple: '#660099',
-  vivoPink: '#FF007F',
-  accentBlue: '#00BFFF',
-  darkBg: '#1A202C',
-  lightBg: '#F7FAFC',
-  cardDarkBg: '#2D3748',
-  cardLightBg: 'white',
-  textDark: 'gray.200',
-  textLight: 'gray.700',
-  subtleTextDark: 'gray.400',
-  subtleTextLight: 'gray.500',
-  borderColorDark: 'gray.700',
+  vivoPurple: '#660099', // Roxo principal da Vivo
+  vivoPurpleDarker: '#4c0073', // Um tom mais escuro para gradientes ou fundos
+  vivoPurpleLight: '#E9D8FD', // Um lavanda bem suave para fundos claros
+  vivoPink: '#FF007F',       // Cor de destaque vibrante
+  accentBlue: '#00BFFF',     // Mantido para possíveis elementos de UI específicos
+  
+  // Cores de Texto adaptadas para fundos roxos
+  textOnDark: 'whiteAlpha.900',      // Para texto sobre fundos roxos escuros
+  textOnLight: '#2D3748',         // Cinza escuro (gray.800) para texto sobre fundos roxos claros
+  subtleTextOnDark: 'gray.400',    // Cinza claro para texto sutil em fundo escuro
+  subtleTextOnLight: 'gray.600',   // Cinza médio para texto sutil em fundo claro
+
+  // Fundos e Bordas
+  cardBgDark: 'rgba(45, 55, 72, 0.6)', // Cinza escuro com transparência para cards em modo escuro
+  cardBgLight: 'white',
+  lightBgGlobal: '#F7FAFC',      // Cinza muito claro global (para partes não-roxas)
+  darkBgGlobal: '#1A202C',       // Preto global (para partes não-roxas)
+  borderColorDark: 'rgba(255, 255, 255, 0.1)', // Borda sutil para modo escuro
   borderColorLight: 'gray.200',
 };
 
@@ -84,16 +91,26 @@ const VivoCelularesPage = () => {
 
   const theme = useTheme();
 
-  const cardBg = useColorModeValue(appColors.cardLightBg, appColors.cardDarkBg);
-  const textColor = useColorModeValue(appColors.textLight, appColors.textDark);
-  const subtleTextColor = useColorModeValue(appColors.subtleTextLight, appColors.subtleTextDark);
-  const borderColor = useColorModeValue(appColors.borderColorLight, appColors.borderColorDark);
+  // Cores de fundo da página com gradiente roxo
   const pageBg = useColorModeValue(
-    `linear-gradient(135deg, ${appColors.lightBg} 0%, ${appColors.accentBlue} 200%)`,
-    `linear-gradient(135deg, ${appColors.darkBg} 0%, ${appColors.vivoPurple} 150%)`
+    `linear-gradient(135deg, ${appColors.vivoPurpleLight} 0%, ${appColors.lightBgGlobal} 100%)`,
+    `linear-gradient(135deg, ${appColors.vivoPurpleDarker} 0%, ${appColors.darkBgGlobal} 150%)`
   );
-  const headerColor = useColorModeValue(appColors.vivoPurple, 'white');
+
+  // Cores de texto principais
+  const textColor = useColorModeValue(appColors.textOnLight, appColors.textOnDark);
+  const subtleTextColor = useColorModeValue(appColors.subtleTextOnLight, appColors.subtleTextOnDark);
+  
+  // Cor do título principal da página
+  const pageHeaderColor = useColorModeValue(appColors.vivoPurple, appColors.textOnDark);
+  // Cor de destaque (rosa vivo)
   const highlightColor = appColors.vivoPink;
+
+  // Cores para os cards
+  const cardBg = useColorModeValue(appColors.cardBgLight, appColors.cardBgDark);
+  const cardHeaderColor = useColorModeValue(appColors.vivoPurple, appColors.textOnDark);
+  const cardBorderColor = useColorModeValue(appColors.borderColorLight, appColors.borderColorDark);
+
 
   const fetchCelulares = useCallback(async () => {
     try {
@@ -165,7 +182,7 @@ const VivoCelularesPage = () => {
 
   const getStatusProps = (status) => {
     if (status === 'Guardado') return { colorScheme: 'green', icon: CheckCircleIcon, label: 'Guardado' };
-    if (status === 'Vitrine') return { colorScheme: 'pink', icon: WarningIcon, label: 'Vitrine' };
+    if (status === 'Vitrine') return { colorScheme: 'pink', icon: WarningIcon, label: 'Vitrine' }; 
     return { colorScheme: 'gray', icon: DragHandleIcon, label: status || 'Indefinido' };
   };
 
@@ -188,25 +205,25 @@ const VivoCelularesPage = () => {
         initial={{ opacity: 0, y: 30, filter: 'blur(5px)' }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
         exit={{ opacity: 0, y: -30, filter: 'blur(5px)' }}
-        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }} 
         whileHover={{
-          scale: 1.03,
-          boxShadow: 'xl',
+          scale: 1.03, 
+          boxShadow: 'xl', 
           borderColor: highlightColor,
-          borderWidth: '2px',
+          borderWidth: '2px', 
         }}
         borderWidth="2px"
-        borderColor="transparent"
+        borderColor="transparent" // Começa transparente, muda no hover
         cursor="pointer"
         onClick={() => handleCelularClick(celular)}
-        minH="220px"
+        minH="220px" 
         display="flex"
         flexDirection="column"
         justifyContent="space-between"
       >
         <VStack align="stretch" spacing={3} flex={1}>
           <Flex justify="space-between" align="flex-start">
-            <Heading size="md" color={headerColor} fontWeight="semibold" noOfLines={2}>
+            <Heading size="md" color={cardHeaderColor} fontWeight="semibold" noOfLines={2}>
               {celular.marca} {celular.modelo}
             </Heading>
             <Tag size="md" colorScheme={statusProps.colorScheme} variant="subtle" borderRadius="full">
@@ -215,7 +232,7 @@ const VivoCelularesPage = () => {
             </Tag>
           </Flex>
 
-          <Divider borderColor={borderColor} my={2}/>
+          <Divider borderColor={cardBorderColor} my={2}/>
 
           <VStack spacing={1.5} align="stretch" fontSize="sm">
             <HStack>
@@ -246,6 +263,7 @@ const VivoCelularesPage = () => {
                     variant="ghost"
                     aria-label="Editar"
                     size="sm"
+                    color={useColorModeValue(appColors.accentBlue, 'white')}
                     onClick={(e) => e.stopPropagation()}
                 />
             </Tooltip>
@@ -256,6 +274,7 @@ const VivoCelularesPage = () => {
                     variant="ghost"
                     aria-label="Excluir"
                     size="sm"
+                    color={useColorModeValue(highlightColor, 'white')}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteCelular(celular._id, celular.marca, celular.modelo);
@@ -270,8 +289,8 @@ const VivoCelularesPage = () => {
   const CelularModal = () => (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" motionPreset="slideInBottom" isCentered>
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
-      <ModalContent bg={cardBg} borderRadius="lg" boxShadow="2xl" mx={4}>
-        <ModalHeader color={headerColor} fontWeight="bold" borderBottomWidth="1px" borderColor={borderColor} px={6} py={4}>
+      <ModalContent bg={cardBg} borderRadius="lg" boxShadow="2xl" mx={4} color={textColor}>
+        <ModalHeader color={cardHeaderColor} fontWeight="bold" borderBottomWidth="1px" borderColor={cardBorderColor} px={6} py={4}>
           <HStack>
             <Icon as={PhoneIcon} color={appColors.vivoPurple} w={6} h={6}/>
             <Text fontSize="xl">Detalhes do Celular</Text>
@@ -282,27 +301,34 @@ const VivoCelularesPage = () => {
           {selectedCelular && (
             <VStack align="stretch" spacing={5}>
                 <VStack align="stretch" spacing={2}>
-                    <Heading size="lg" color={headerColor}>{selectedCelular.marca}</Heading>
-                    <Text fontSize="2xl" fontWeight="medium" color={textColor} lineHeight="shorter">{selectedCelular.modelo}</Text>
+                    <Heading size="lg" color={cardHeaderColor}>{selectedCelular.marca}</Heading>
+                    <Text fontSize="2xl" fontWeight="medium" lineHeight="shorter">{selectedCelular.modelo}</Text>
                     <Tag size="lg" colorScheme={getStatusProps(selectedCelular.status).colorScheme} variant="solid" alignSelf="flex-start" mt={1}>
                         <Icon as={getStatusProps(selectedCelular.status).icon} mr={2}/>
                         {getStatusProps(selectedCelular.status).label}
                     </Tag>
                 </VStack>
-                <Divider borderColor={borderColor}/>
+                <Divider borderColor={cardBorderColor}/>
                 <Grid templateColumns="repeat(auto-fit, minmax(180px, 1fr))" gap={4}>
                     <GridItem>
                         <Text fontSize="sm" fontWeight="medium" color={subtleTextColor}>Cor:</Text>
-                        <Text fontSize="md" color={textColor}>{selectedCelular.cor || 'Não informada'}</Text>
+                        <Text fontSize="md">{selectedCelular.cor || 'Não informada'}</Text>
                     </GridItem>
                     <GridItem>
                         <Text fontSize="sm" fontWeight="medium" color={subtleTextColor}>Cadastrado em:</Text>
-                        <Text fontSize="md" color={textColor}>{formatDate(selectedCelular.createdAt)}</Text>
+                        <Text fontSize="md">{formatDate(selectedCelular.createdAt)}</Text>
                     </GridItem>
                 </Grid>
 
-              <Text fontSize="md" fontWeight="bold" color={textColor} mt={3}>Observações:</Text>
-              <Box bg={useColorModeValue(appColors.lightBg, appColors.darkBg)} p={3} borderRadius="md" minH="80px">
+              <Text fontSize="md" fontWeight="bold" mt={3}>Observações:</Text>
+              <Box 
+                bg={useColorModeValue(appColors.vivoPurpleLight, appColors.darkBgGlobal)} 
+                p={3} 
+                borderRadius="md" 
+                minH="80px"
+                borderWidth="1px"
+                borderColor={cardBorderColor}
+              >
                 <Text fontStyle="italic" color={subtleTextColor} fontSize="sm">
                     {selectedCelular.observacoes || 'Nenhuma observação registrada.'}
                 </Text>
@@ -318,12 +344,14 @@ const VivoCelularesPage = () => {
                   onClick={onClose}
                   size="md"
                   _hover={{ bg: appColors.accentBlue, color: 'white' }}
+                  borderColor={appColors.accentBlue}
+                  color={appColors.accentBlue}
                 >
                   Editar Detalhes
                 </Button>
                 <Button
                   leftIcon={<DeleteIcon />}
-                  bg={highlightColor}
+                  bg={highlightColor} 
                   color="white"
                   _hover={{ bg: appColors.vivoPurple }}
                   onClick={() => {
@@ -363,10 +391,10 @@ const VivoCelularesPage = () => {
             gap={{ base: 4, md: 6 }}
             pb={4}
             borderBottomWidth="1px"
-            borderColor={borderColor}
+            borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
           >
             <VStack align={{ base: 'center', md: 'start' }} spacing={1} textAlign={{ base: 'center', md: 'left' }} flexShrink={0}>
-              <Heading as="h1" size="xl" color={headerColor}>
+              <Heading as="h1" size="xl" color={pageHeaderColor}> {/* Usando pageHeaderColor */}
                 Estoque de Celulares <Text as="span" color={highlightColor}>Vivo</Text>
               </Heading>
               <Text fontSize="md" color={subtleTextColor}>
@@ -378,7 +406,7 @@ const VivoCelularesPage = () => {
               to="/vivo/celulares/novo"
               leftIcon={<AddIcon />}
               bg={appColors.vivoPurple}
-              color="white"
+              color="white" 
               _hover={{ bg: highlightColor, transform: 'scale(1.05)'}}
               _active={{ bg: appColors.vivoPink, transform: 'scale(0.95)' }}
               size="lg"
@@ -394,14 +422,14 @@ const VivoCelularesPage = () => {
           </Flex>
 
           <MotionBox
-            bg={useColorModeValue(appColors.cardLightBg, `rgba(45, 55, 72, 0.8)`)}
+            bg={useColorModeValue(appColors.cardBgLight, appColors.cardBgDark)} 
             p={{ base: 4, md: 6 }}
             borderRadius="xl"
             boxShadow="lg"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-            backdropFilter={useColorModeValue("none", "blur(10px)")}
+            backdropFilter={useColorModeValue("none", "blur(5px)")} // Efeito de vidro sutil só no dark mode
           >
             <HStack spacing={{ base: 3, md: 4}} w="full" direction={{ base: 'column', sm: 'row' }}>
               <InputGroup size="lg" flex={1}>
@@ -412,11 +440,12 @@ const VivoCelularesPage = () => {
                   placeholder="Buscar por marca ou modelo..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  bg={useColorModeValue(appColors.lightBg, appColors.darkBg)}
+                  bg={useColorModeValue(appColors.lightBgGlobal, appColors.darkBgGlobal)}
                   borderRadius="md"
-                  borderColor={borderColor}
+                  borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
                   _hover={{ borderColor: appColors.accentBlue }}
                   _focus={{ borderColor: highlightColor, boxShadow: `0 0 0 1px ${highlightColor}`}}
+                  color={textColor} // Garante que o texto do input seja legível
                 />
               </InputGroup>
 
@@ -425,15 +454,17 @@ const VivoCelularesPage = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 w={{ base: 'full', sm: '220px' }}
                 size="lg"
-                bg={useColorModeValue(appColors.lightBg, appColors.darkBg)}
+                bg={useColorModeValue(appColors.lightBgGlobal, appColors.darkBgGlobal)}
                 borderRadius="md"
-                borderColor={borderColor}
+                borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
                 _hover={{ borderColor: appColors.accentBlue }}
                 _focus={{ borderColor: highlightColor, boxShadow: `0 0 0 1px ${highlightColor}`}}
+                color={textColor} // Garante que o texto do select seja legível
               >
-                <option value="todos">Todos os Status</option>
-                <option value="Guardado">Guardado</option>
-                <option value="Vitrine">Vitrine</option>
+                {/* As options herdarão a cor do Select, mas podem ser estilizadas individualmente se necessário */}
+                <option value="todos" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Todos os Status</option>
+                <option value="Guardado" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Guardado</option>
+                <option value="Vitrine" style={{ backgroundColor: useColorModeValue(appColors.cardBgLight, appColors.darkBgGlobal) }}>Vitrine</option>
               </Select>
             </HStack>
           </MotionBox>
