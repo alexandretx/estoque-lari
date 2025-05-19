@@ -71,7 +71,7 @@ const VivoAcessoriosPage = () => {
         let bValue = b[sortConfig.key];
 
         // Tratamento especial para datas
-        if (sortConfig.key === 'createdAt' || sortConfig.key === 'dataCompra') {
+        if (sortConfig.key === 'createdAt') {
           aValue = aValue ? new Date(aValue).getTime() : 0;
           bValue = bValue ? new Date(bValue).getTime() : 0;
         } else if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -181,13 +181,6 @@ const VivoAcessoriosPage = () => {
               Status
             </th>
             <th className="py-2 px-4 font-semibold text-sm text-left">Cor</th>
-            <th 
-              className="py-2 px-4 font-semibold text-sm text-left"
-              onClick={() => requestSort('dataCompra')}
-              style={getSortableHeaderStyle('dataCompra')}
-            >
-              Data de Compra
-            </th>
             <th className="py-2 px-4 font-semibold text-sm text-center">Ações</th>
           </tr>
         </thead>
@@ -208,7 +201,6 @@ const VivoAcessoriosPage = () => {
                   {acessorio.status || 'N/A'}
                 </td>
                 <td className="py-2 px-4 text-sm">{acessorio.cor || 'N/A'}</td>
-                <td className="py-2 px-4 text-sm">{formatDate(acessorio.dataCompra)}</td>
                 <td className="py-2 px-4 text-sm text-center">
                   <div className="flex justify-center space-x-2">
                     <Link
