@@ -48,7 +48,7 @@ const createVivoCelular = async (req, res) => {
             action: 'Adicionou um celular Vivo',
             item: `${celular.marca} ${celular.modelo}`,
             itemId: celular._id,
-            itemModel: 'VivoCelular'
+            itemType: 'celular'
         });
         
         res.status(201).json(celular);
@@ -80,7 +80,7 @@ const updateVivoCelular = async (req, res) => {
             action: 'Atualizou um celular Vivo',
             item: `${celular.marca} ${celular.modelo}`,
             itemId: celular._id,
-            itemModel: 'VivoCelular'
+            itemType: 'celular'
         });
         
         res.status(200).json(celular);
@@ -109,7 +109,7 @@ const deleteVivoCelular = async (req, res) => {
             action: 'Removeu um celular Vivo',
             item: `${celular.marca} ${celular.modelo}`,
             itemId: celular._id,
-            itemModel: 'VivoCelular'
+            itemType: 'celular'
         });
         
         res.status(200).json({ message: 'Celular removido' });

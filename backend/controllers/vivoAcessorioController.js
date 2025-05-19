@@ -48,7 +48,7 @@ const createVivoAcessorio = async (req, res) => {
             action: 'Adicionou um acessório Vivo',
             item: `${acessorio.tipo} ${acessorio.marca} ${acessorio.modelo}`,
             itemId: acessorio._id,
-            itemModel: 'VivoAcessorio'
+            itemType: 'acessorio'
         });
         
         res.status(201).json(acessorio);
@@ -80,7 +80,7 @@ const updateVivoAcessorio = async (req, res) => {
             action: 'Atualizou um acessório Vivo',
             item: `${acessorio.tipo} ${acessorio.marca} ${acessorio.modelo}`,
             itemId: acessorio._id,
-            itemModel: 'VivoAcessorio'
+            itemType: 'acessorio'
         });
         
         res.status(200).json(acessorio);
@@ -109,7 +109,7 @@ const deleteVivoAcessorio = async (req, res) => {
             action: 'Removeu um acessório Vivo',
             item: `${acessorio.tipo} ${acessorio.marca} ${acessorio.modelo}`,
             itemId: acessorio._id,
-            itemModel: 'VivoAcessorio'
+            itemType: 'acessorio'
         });
         
         res.status(200).json({ message: 'Acessório removido' });
