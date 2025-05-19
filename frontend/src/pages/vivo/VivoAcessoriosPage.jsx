@@ -13,7 +13,6 @@ const VivoAcessoriosPage = () => {
   const [filteredAcessorios, setFilteredAcessorios] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [tipoFilter, setTipoFilter] = useState('todos');
-  const [statusFilter, setStatusFilter] = useState('todos');
 
   // Buscar acessórios
   const fetchAcessorios = useCallback(async () => {
@@ -46,11 +45,6 @@ const VivoAcessoriosPage = () => {
     // Aplicar filtro de tipo
     if (tipoFilter !== 'todos') {
       result = result.filter(acessorio => acessorio.tipo === tipoFilter);
-    }
-
-    // Aplicar filtro de status
-    if (statusFilter !== 'todos') {
-      result = result.filter(acessorio => acessorio.status === statusFilter);
     }
 
     // Aplicar busca
@@ -90,7 +84,7 @@ const VivoAcessoriosPage = () => {
     }
 
     setFilteredAcessorios(result);
-  }, [acessorios, searchTerm, sortConfig, tipoFilter, statusFilter]);
+  }, [acessorios, searchTerm, sortConfig, tipoFilter]);
 
   // Função para ordenar
   const requestSort = (key) => {
@@ -119,12 +113,6 @@ const VivoAcessoriosPage = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  // Formatador de valor
-  const formatCurrency = (value) => {
-    if (value === undefined || value === null) return 'N/A';
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   // Estilo para o cabeçalho da coluna ordenável
@@ -182,20 +170,6 @@ const VivoAcessoriosPage = () => {
             </th>
             <th 
               className="py-2 px-4 font-semibold text-sm text-left"
-              onClick={() => requestSort('status')}
-              style={getSortableHeaderStyle('status')}
-            >
-              Status
-            </th>
-            <th 
-              className="py-2 px-4 font-semibold text-sm text-left"
-              onClick={() => requestSort('valorVenda')}
-              style={getSortableHeaderStyle('valorVenda')}
-            >
-              Valor
-            </th>
-            <th 
-              className="py-2 px-4 font-semibold text-sm text-left"
               onClick={() => requestSort('dataCompra')}
               style={getSortableHeaderStyle('dataCompra')}
             >
@@ -207,7 +181,7 @@ const VivoAcessoriosPage = () => {
         <tbody className="divide-y divide-gray-200">
           {filteredAcessorios.length === 0 ? (
             <tr>
-              <td colSpan="9" className="py-4 px-4 text-center text-gray-500">
+              <td colSpan="7" className="py-4 px-4 text-center text-gray-500">
                 Nenhum acessório encontrado
               </td>
             </tr>
@@ -219,16 +193,6 @@ const VivoAcessoriosPage = () => {
                 <td className="py-2 px-4 text-sm">{acessorio.modelo || 'N/A'}</td>
                 <td className="py-2 px-4 text-sm">{acessorio.cor || 'N/A'}</td>
                 <td className="py-2 px-4 text-sm">{acessorio.quantidade || '0'}</td>
-                <td className="py-2 px-4 text-sm">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    acessorio.status === 'disponível' ? 'bg-green-100 text-green-800' :
-                    acessorio.status === 'vendido' ? 'bg-blue-100 text-blue-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {acessorio.status || 'N/A'}
-                  </span>
-                </td>
-                <td className="py-2 px-4 text-sm">{formatCurrency(acessorio.valorVenda)}</td>
                 <td className="py-2 px-4 text-sm">{formatDate(acessorio.dataCompra)}</td>
                 <td className="py-2 px-4 text-sm text-center">
                   <div className="flex justify-center space-x-2">
@@ -308,21 +272,6 @@ const VivoAcessoriosPage = () => {
                 {tipo}
               </option>
             ))}
-          </select>
-        </div>
-        
-        <div className="flex items-center space-x-2 w-full md:w-auto">
-          <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">Status:</label>
-          <select
-            id="statusFilter"
-            className="pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="todos">Todos</option>
-            <option value="disponível">Disponível</option>
-            <option value="vendido">Vendido</option>
-            <option value="reservado">Reservado</option>
           </select>
         </div>
       </div>

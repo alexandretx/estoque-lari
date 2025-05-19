@@ -20,14 +20,6 @@ const VivoAcessorioSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
-    valorCompra: {
-        type: Number,
-        min: [0, 'O valor não pode ser negativo'],
-    },
-    valorVenda: {
-        type: Number,
-        min: [0, 'O valor não pode ser negativo'],
-    },
     dataCompra: {
         type: Date,
     },
@@ -35,11 +27,6 @@ const VivoAcessorioSchema = new mongoose.Schema({
         type: Number,
         min: [0, 'A quantidade não pode ser negativa'],
         default: 1,
-    },
-    status: {
-        type: String,
-        enum: ['disponível', 'vendido', 'reservado'],
-        default: 'disponível'
     },
     observacoes: {
         type: String,
