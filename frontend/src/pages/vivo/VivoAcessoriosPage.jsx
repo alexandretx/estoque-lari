@@ -183,13 +183,6 @@ const VivoAcessoriosPage = () => {
             <th className="py-2 px-4 font-semibold text-sm text-left">Cor</th>
             <th 
               className="py-2 px-4 font-semibold text-sm text-left"
-              onClick={() => requestSort('quantidade')}
-              style={getSortableHeaderStyle('quantidade')}
-            >
-              Qtd
-            </th>
-            <th 
-              className="py-2 px-4 font-semibold text-sm text-left"
               onClick={() => requestSort('dataCompra')}
               style={getSortableHeaderStyle('dataCompra')}
             >
@@ -201,7 +194,7 @@ const VivoAcessoriosPage = () => {
         <tbody className="divide-y divide-gray-200">
           {filteredAcessorios.length === 0 ? (
             <tr>
-              <td colSpan="8" className="py-4 px-4 text-center text-gray-500">
+              <td colSpan="7" className="py-4 px-4 text-center text-gray-500">
                 Nenhum acessório encontrado
               </td>
             </tr>
@@ -215,7 +208,6 @@ const VivoAcessoriosPage = () => {
                   {acessorio.status || 'N/A'}
                 </td>
                 <td className="py-2 px-4 text-sm">{acessorio.cor || 'N/A'}</td>
-                <td className="py-2 px-4 text-sm">{acessorio.quantidade || '0'}</td>
                 <td className="py-2 px-4 text-sm">{formatDate(acessorio.dataCompra)}</td>
                 <td className="py-2 px-4 text-sm text-center">
                   <div className="flex justify-center space-x-2">

@@ -28,11 +28,6 @@ const VivoAcessorioSchema = new mongoose.Schema({
     dataCompra: {
         type: Date,
     },
-    quantidade: {
-        type: Number,
-        min: [0, 'A quantidade não pode ser negativa'],
-        default: 1,
-    },
     observacoes: {
         type: String,
         trim: true,
