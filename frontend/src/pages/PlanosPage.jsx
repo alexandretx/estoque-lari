@@ -1,77 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  useColorModeValue,
-  HStack,
-  VStack,
-  IconButton,
-  Spinner,
-  Text,
-  Icon,
-  useDisclosure,
-} from '@chakra-ui/react';
-import {
-  AddIcon,
-  EditIcon,
-  DeleteIcon,
-  WarningIcon
-} from '@chakra-ui/icons';
-import ConfirmationModal from '../components/common/ConfirmationModal';
+import { PlusIcon, PencilIcon, TrashIcon } from './../components/Icons';
 
 const API_PLANOS_URL = `${import.meta.env.VITE_API_URL}/api/planos`;
-
-const appColors = {
-  vivoPurple: '#660099',
-  vivoPurpleDarker: '#4c0073',
-  vivoPurpleLight: '#E9D8FD',
-  vivoPink: '#FF007F',
-  accentBlue: '#00BFFF',
-  textOnDark: 'whiteAlpha.900',
-  textOnLight: '#2D3748',
-  subtleTextOnDark: 'gray.400',
-  subtleTextOnLight: 'gray.600',
-  cardBgDark: 'rgba(45, 55, 72, 0.6)',
-  cardBgLight: 'white',
-  lightBgGlobal: '#F7FAFC',
-  darkBgGlobal: '#1A202C',
-  borderColorDark: 'rgba(255, 255, 255, 0.1)',
-  borderColorLight: 'gray.200',
-};
 
 const PlanosPage = () => {
   const [planos, setPlanos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { isOpen: isConfirmModalOpen, onOpen: onConfirmModalOpen, onClose: onConfirmModalClose } = useDisclosure();
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  useEffect(() => {
+    fetchPlanos();
+  }, []);
 
-  const pageBg = useColorModeValue(
-    `linear-gradient(135deg, ${appColors.vivoPurpleLight} 0%, ${appColors.lightBgGlobal} 100%)`,
-    `linear-gradient(135deg, ${appColors.vivoPurpleDarker} 0%, ${appColors.darkBgGlobal} 150%)`
-  );
-  const textColor = useColorModeValue(appColors.textOnLight, appColors.textOnDark);
-  const subtleTextColor = useColorModeValue(appColors.subtleTextOnLight, appColors.subtleTextOnDark);
-  const pageHeaderColor = useColorModeValue(appColors.vivoPurple, appColors.textOnDark);
-  const highlightColor = appColors.vivoPink;
-  const tableBg = useColorModeValue(appColors.cardBgLight, appColors.cardBgDark);
-  const tableHeaderBg = useColorModeValue('gray.100', 'gray.700');
-  const tableBorderColor = useColorModeValue(appColors.borderColorLight, appColors.borderColorDark);
-
-  const fetchPlanos = useCallback(async () => {
+  const fetchPlanos = async () => {
     setLoading(true);
     try {
       const response = await axios.get(API_PLANOS_URL);
@@ -82,151 +25,68 @@ const PlanosPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchPlanos();
-  }, [fetchPlanos]);
-
-  const handleDelete = (plano) => {
-    setItemToDelete(plano);
-    onConfirmModalOpen();
   };
 
-  const confirmDeleteHandler = async () => {
-    if (!itemToDelete) return;
-    setIsDeleting(true);
-    try {
-      await axios.delete(`${API_PLANOS_URL}/${itemToDelete._id}`);
-      setPlanos(planos.filter(p => p._id !== itemToDelete._id));
-      toast.success(`Plano "${itemToDelete.nome}" excluído com sucesso!`);
-      onConfirmModalClose();
-      setItemToDelete(null);
-    } catch (err) {
-      console.error("Erro ao excluir plano:", err.response?.data?.message || err.message);
-      toast.error(err.response?.data?.message || 'Erro ao excluir plano.');
+  const handleDelete = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir este plano?')) {
+      try {
+        await axios.delete(`${API_PLANOS_URL}/${id}`);
+        setPlanos(planos.filter(p => p._id !== id));
+        toast.success('Plano excluído com sucesso!');
+      } catch (err) {
+        console.error("Erro ao excluir plano:", err.response?.data?.message || err.message);
+        toast.error(err.response?.data?.message || 'Erro ao excluir plano.');
+      }
     }
-    setIsDeleting(false);
-  };
-
-  const formatCurrency = (value) => {
-    return value.toFixed(2).replace('.', ',');
   };
 
   return (
-    <Box bg={pageBg} minH="100vh" color={textColor}>
-      <Container maxW="container.lg" py={{ base: 8, md: 12 }} px={{ base: 4, md: 6 }}>
-        <VStack spacing={{base: 8, md: 10}} align="stretch">
-          <Flex
-            direction={{ base: 'column', md: 'row' }}
-            justify="space-between"
-            align={{ base: 'stretch', md: 'center' }}
-            gap={{ base: 4, md: 6 }}
-            pb={4}
-            borderBottomWidth="1px"
-            borderColor={useColorModeValue(appColors.borderColorLight, appColors.borderColorDark)}
-          >
-            <VStack align={{ base: 'center', md: 'start' }} spacing={1} textAlign={{ base: 'center', md: 'left' }} flexShrink={0}>
-              <Heading as="h1" size="xl" color={pageHeaderColor}>
-                Gerenciar Planos
-              </Heading>
-              <Text fontSize="md" color={subtleTextColor}>
-                Visualize, adicione ou remova planos de serviço.
-              </Text>
-            </VStack>
-            <Button
-              as={Link}
-              to="/planos/novo"
-              leftIcon={<AddIcon />}
-              bg={appColors.vivoPurple}
-              color="white"
-              _hover={{ bg: highlightColor, transform: 'scale(1.05)'}}
-              _active={{ bg: appColors.vivoPink, transform: 'scale(0.95)' }}
-              size="lg"
-              px={8}
-              py={6}
-              borderRadius="lg"
-              boxShadow="md"
-              fontWeight="bold"
-              transition="all 0.2s ease-in-out"
-            >
-              Adicionar Plano
-            </Button>
-          </Flex>
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-700">Gerenciar Planos</h2>
+        <Link
+          to="/planos/novo"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline inline-flex items-center transition duration-200"
+        >
+          <PlusIcon className="w-4 h-4 mr-2" />
+          Adicionar Plano
+        </Link>
+      </div>
 
-          {loading ? (
-            <Flex justify="center" align="center" h="200px">
-              <Spinner size="xl" color={appColors.vivoPurple} thickness="4px" speed="0.65s" />
-            </Flex>
-          ) : (
-            <Box bg={tableBg} borderRadius="lg" boxShadow="md" borderWidth="1px" borderColor={tableBorderColor} overflowX="auto">
-              <Table variant="simple">
-                <Thead bg={tableHeaderBg}>
-                  <Tr>
-                    <Th color={textColor}>Nome</Th>
-                    <Th color={textColor}>SKU</Th>
-                    <Th color={textColor} isNumeric>Valor (R$)</Th>
-                    <Th color={textColor} textAlign="center">Ações</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {planos.length === 0 ? (
-                    <Tr>
-                      <Td colSpan={4} textAlign="center" borderColor={tableBorderColor}>
-                        <VStack spacing={3} py={8}>
-                          <Icon as={WarningIcon} boxSize="40px" color="yellow.400" />
-                          <Text fontSize="lg" color={subtleTextColor}>Nenhum plano cadastrado.</Text>
-                        </VStack>
-                      </Td>
-                    </Tr>
-                  ) : (
-                    planos.map((plano) => (
-                      <Tr key={plano._id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
-                        <Td borderColor={tableBorderColor}>{plano.nome}</Td>
-                        <Td borderColor={tableBorderColor}>{plano.sku}</Td>
-                        <Td borderColor={tableBorderColor} isNumeric>{formatCurrency(plano.valor)}</Td>
-                        <Td borderColor={tableBorderColor} textAlign="center">
-                          <HStack spacing={2} justify="center">
-                            <IconButton
-                              as={Link}
-                              to={`/planos/editar/${plano._id}`}
-                              icon={<EditIcon />}
-                              colorScheme="blue"
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Editar Plano"
-                            />
-                            <IconButton
-                              icon={<DeleteIcon />}
-                              colorScheme="pink"
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Excluir Plano"
-                              onClick={() => handleDelete(plano)}
-                            />
-                          </HStack>
-                        </Td>
-                      </Tr>
-                    ))
-                  )}
-                </Tbody>
-              </Table>
-            </Box>
-          )}
-        </VStack>
+      {loading && <p className="text-center text-gray-600 py-8">Carregando planos...</p>}
 
-        <ConfirmationModal
-            isOpen={isConfirmModalOpen}
-            onClose={onConfirmModalClose}
-            onConfirm={confirmDeleteHandler}
-            title="Confirmar Exclusão de Plano"
-            body={`Tem certeza que deseja excluir o plano "${itemToDelete?.nome}"? Esta ação é irreversível.`}
-            confirmText="Excluir"
-            cancelText="Cancelar"
-            isLoading={isDeleting}
-        />
-      </Container>
-    </Box>
+      {!loading && (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full leading-normal">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SKU</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Valor (R$)</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {planos.length === 0 ? (
+                <tr><td colSpan="4" className="px-5 py-5 bg-white text-sm text-center text-gray-500">Nenhum plano cadastrado.</td></tr>
+              ) : (
+                planos.map((plano) => (
+                  <tr key={plano._id} className="hover:bg-gray-50">
+                    <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{plano.nome}</p></td>
+                    <td className="px-5 py-4 bg-white text-sm"><p className="text-gray-900 whitespace-no-wrap">{plano.sku}</p></td>
+                    <td className="px-5 py-4 bg-white text-sm text-right"><p className="text-gray-900 whitespace-no-wrap">{plano.valor.toFixed(2).replace('.', ',')}</p></td>
+                    <td className="px-5 py-4 bg-white text-sm text-center whitespace-no-wrap space-x-2">
+                      <Link to={`/planos/editar/${plano._id}`} className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 inline-block" title="Editar"><PencilIcon className="w-5 h-5"/></Link>
+                      <button onClick={() => handleDelete(plano._id)} className="text-red-600 hover:text-red-800 transition-colors p-1 inline-block" title="Excluir"><TrashIcon className="w-5 h-5"/></button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 };
 
