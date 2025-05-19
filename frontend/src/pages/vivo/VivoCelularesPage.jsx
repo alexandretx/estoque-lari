@@ -110,12 +110,6 @@ const VivoCelularesPage = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  // Formatador de valor
-  const formatCurrency = (value) => {
-    if (value === undefined || value === null) return 'N/A';
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  };
-
   // Estilo para o cabeçalho da coluna ordenável
   const getSortableHeaderStyle = (key) => {
     return {
@@ -165,13 +159,6 @@ const VivoCelularesPage = () => {
             </th>
             <th 
               className="py-2 px-4 font-semibold text-sm text-left"
-              onClick={() => requestSort('valorVenda')}
-              style={getSortableHeaderStyle('valorVenda')}
-            >
-              Valor
-            </th>
-            <th 
-              className="py-2 px-4 font-semibold text-sm text-left"
               onClick={() => requestSort('dataCompra')}
               style={getSortableHeaderStyle('dataCompra')}
             >
@@ -183,7 +170,7 @@ const VivoCelularesPage = () => {
         <tbody className="divide-y divide-gray-200">
           {filteredCelulares.length === 0 ? (
             <tr>
-              <td colSpan="8" className="py-4 px-4 text-center text-gray-500">
+              <td colSpan="7" className="py-4 px-4 text-center text-gray-500">
                 Nenhum celular encontrado
               </td>
             </tr>
@@ -198,16 +185,14 @@ const VivoCelularesPage = () => {
                   {celular.ram ? ` / ${celular.ram}GB RAM` : ''}
                 </td>
                 <td className="py-2 px-4 text-sm">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    celular.status === 'disponível' ? 'bg-green-100 text-green-800' :
-                    celular.status === 'vendido' ? 'bg-blue-100 text-blue-800' :
-                    celular.status === 'reservado' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ 
+                    celular.status === 'Guardado' ? 'text-green-700 bg-green-100' :
+                    celular.status === 'Vitrine' ? 'text-red-700 bg-red-100' :
+                    'text-gray-700 bg-gray-100' // Fallback, caso haja algum status inesperado
                   }`}>
                     {celular.status || 'N/A'}
                   </span>
                 </td>
-                <td className="py-2 px-4 text-sm">{formatCurrency(celular.valorVenda)}</td>
                 <td className="py-2 px-4 text-sm">{formatDate(celular.dataCompra)}</td>
                 <td className="py-2 px-4 text-sm text-center">
                   <div className="flex justify-center space-x-2">
@@ -281,10 +266,8 @@ const VivoCelularesPage = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="todos">Todos</option>
-            <option value="disponível">Disponível</option>
-            <option value="vendido">Vendido</option>
-            <option value="reservado">Reservado</option>
-            <option value="em manutenção">Em Manutenção</option>
+            <option value="Guardado">Guardado</option>
+            <option value="Vitrine">Vitrine</option>
           </select>
         </div>
       </div>

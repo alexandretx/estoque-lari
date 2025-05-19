@@ -12,10 +12,8 @@ const initialFormData = {
   armazenamento: '',
   ram: '',
   cor: '',
-  valorCompra: '',
-  valorVenda: '',
   dataCompra: '',
-  status: 'disponível',
+  status: 'Guardado',
   observacoes: ''
 };
 
@@ -60,7 +58,7 @@ const VivoCelularFormPage = () => {
     const { name, value, type } = e.target;
     
     // Conversão de valores numéricos
-    if (type === 'number' || name === 'armazenamento' || name === 'ram' || name === 'valorCompra' || name === 'valorVenda') {
+    if (type === 'number' || name === 'armazenamento' || name === 'ram') {
       setFormData({
         ...formData,
         [name]: value === '' ? '' : Number(value)
@@ -222,40 +220,6 @@ const VivoCelularFormPage = () => {
               />
             </div>
 
-            {/* Valor de Compra */}
-            <div>
-              <label htmlFor="valorCompra" className="block text-sm font-medium text-gray-700 mb-1">
-                Valor de Compra (R$)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                id="valorCompra"
-                name="valorCompra"
-                value={formData.valorCompra}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Valor de Venda */}
-            <div>
-              <label htmlFor="valorVenda" className="block text-sm font-medium text-gray-700 mb-1">
-                Valor de Venda (R$)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                id="valorVenda"
-                name="valorVenda"
-                value={formData.valorVenda}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
             {/* Data de Compra */}
             <div>
               <label htmlFor="dataCompra" className="block text-sm font-medium text-gray-700 mb-1">
@@ -283,10 +247,8 @@ const VivoCelularFormPage = () => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="disponível">Disponível</option>
-                <option value="vendido">Vendido</option>
-                <option value="reservado">Reservado</option>
-                <option value="em manutenção">Em Manutenção</option>
+                <option value="Guardado">Guardado</option>
+                <option value="Vitrine">Vitrine</option>
               </select>
             </div>
           </div>

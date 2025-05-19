@@ -27,21 +27,13 @@ const VivoCelularSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
-    valorCompra: {
-        type: Number,
-        min: [0, 'O valor não pode ser negativo'],
-    },
-    valorVenda: {
-        type: Number,
-        min: [0, 'O valor não pode ser negativo'],
-    },
     dataCompra: {
         type: Date,
     },
     status: {
         type: String,
-        enum: ['disponível', 'vendido', 'reservado', 'em manutenção'],
-        default: 'disponível'
+        enum: ['Guardado', 'Vitrine'],
+        default: 'Guardado'
     },
     observacoes: {
         type: String,
